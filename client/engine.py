@@ -1,0 +1,136 @@
+import time
+from threading import Lock
+from PyQt5 import QtWidgets as widgets
+from PyQt5 import QtCore as core
+
+from com.talk import send_cmd, recv_cmd
+from client.signal import ClientSignal
+from client.panel import GamePanel
+import config
+
+
+class ClientEngine:
+
+    def __init__(self,
+                 signals: ClientSignal,
+                 socket_obj):
+
+        self.Socket = socket_obj
+        # 待发送的点临时buffer
+        self.PointBuffer = []
+        # 临时区锁
+        self.BufferLock = Lock()
+        # 客户端事件信号
+        self.Signals = signals
+
+        self.GamerId = None
+        self.GamerUsrName = None
+
+        self.init_slots()
+        self.Panel = GamePanel(self.Signals)  # todo: 修改panel
+
+
+    def init_slots(self):
+        self.Signals.bind_paint_point_signal(self.signal_paint_point)
+        self.Signals.bind_click_point_signal(self.signal_click_point)
+        self.Signals.bind_release_point_signal(self.signal_release_point)
+        self.Signals.bind_chat_send_signal(self.signal_send_chat)
+        # todo: setting是小写的，注意同步到server
+        self.Signals.bind_thickness_change_signal(self.get_setting_change_handler('thickness'))
+        self.Signals.bind_color_change_signal(self.get_setting_change_handler('color'))
+        self.Signals.bind_eraser_change_signal(self.get_setting_change_handler('eraser'))
+        self.Signals.bind_clear_signal(self.get_setting_change_handler('clear'))
+
+        self.Signals.bind_game_begin_signal(self.get_send_cmd_handler('BeginGame'))
+
+
+
+
+
+    # 画板上鼠标移动时画点的对应槽函数
+    # 将点添加到buffer，检查buffer容量并发送buffer内所有点
+    def signal_paint_point(self, point):
+        self.append_point(point)
+        if len(self.PointBuffer) == config.client.PointBufferSize:
+            self.immediate_send_all_points()
+
+
+    # 画板上鼠标点击时画点的对应槽函数
+    # 将会立刻发送点，会改变画板的状态为painting
+    def signal_click_point(self, point):
+        x = point.x()
+        y = point.y()
+        send_cmd(self.Socket, command='ClickPoint', X=x, Y=y)
+
+
+    # 画板上鼠标松开的槽函数
+    # 立刻发送所有点
+    def signal_release_point(self, point):
+        time.sleep(0.2)
+        self.immediate_send_all_points()
+
+
+    # 返回获得发送指令的处理函数
+    def get_send_cmd_handler(self, cmd):
+        def sender(**kwargs):
+            self.send_cmd(command=cmd, **kwargs)
+        return sender
+
+
+    # 获取设置变化的处理函数
+    # 实质是闭包封装了一个发送设置变化的函数
+    def get_setting_change_handler(self, name):
+        def sender(val=None):
+            d = {name:val}
+            self.send_cmd(command='SettingChanged', **d)
+        return sender
+
+
+    def signal_send_chat(self, msg):
+        self.send_cmd(command='Chat',
+                      id=self.GamerId,
+                      name=self.GamerUsrName,
+                      content=msg)
+
+
+    # 立刻发送所有点，清空buffer
+    def immediate_send_all_points(self):
+        self.BufferLock.acquire(True)
+        points = []
+        for x, y in self.PointBuffer:
+            points.append((x,y))
+            # points[str(i)] = str(x_) + ' ' + str(y_)
+        send_cmd(self.Socket, 'PaintPoint', points=points)
+        self.PointBuffer.clear()
+        self.BufferLock.release()
+
+
+    # 添加点到缓冲区
+    # 会使用锁保证缓冲区互斥
+    def append_point(self, point):
+        x = point.x()
+        y = point.y()
+        self.BufferLock.acquire(True)
+        self.PointBuffer.append([x,y])
+        self.BufferLock.release()
+
+
+    def add_gamer(self, gamer_name):
+        self.Panel.add_gamer(gamer_name)
+
+
+    def recv_cmd(self):
+        return recv_cmd(self.Socket)
+
+
+    def send_cmd(self, command, **kwargs):
+        send_cmd(self.Socket, command, **kwargs)
+
+
+
+
+
+
+
+
+
