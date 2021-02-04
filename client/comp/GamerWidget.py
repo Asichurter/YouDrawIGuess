@@ -20,7 +20,7 @@ class GamerWidget(widgets.QWidget):
         self.NameLabel.setVisible(visible)
         self.PointLabel.setVisible(visible)
 
-    def setName(self, name):
+    def set_name(self, name):
         self.GamerName = name
         self.NameLabel.setText(name)
 
@@ -29,7 +29,7 @@ class GamerWidget(widgets.QWidget):
         self.NameLabel.setVisible(True)
         self.PointLabel.setVisible(True)
 
-    def setPoint(self, point):
+    def set_point(self, point):
         self.GamerPoint = point
         self.PointLabel.setText(point)
 

@@ -6,18 +6,16 @@ import sys
 import socket
 
 from utils import get_font_stylesheet
-from com.protocol import encode_msg, decode_msg, decode_length, HeaderLength
-from config import DefaultConfigSet
+from com.talk import send_cmd, recv_cmd
 
 size = (240, 160)
 addr = ('103.46.128.45', 36654)
 
 class LoginPanel(widgets.QMainWindow):
-    def __init__(self, socket_, cfgs, activator=None):
+    def __init__(self, socket_obj, activator=None):
         super(LoginPanel, self).__init__()
 
-        self.Socket = socket_
-        self.Cfg = cfgs
+        self.Socket = socket_obj
         self.Activator = activator
 
         self.setWindowTitle('登录')
@@ -54,38 +52,43 @@ class LoginPanel(widgets.QMainWindow):
         self.show()
 
     def recv_cmd(self):
-        l_msg = self.Socket.recv(HeaderLength, socket.MSG_WAITALL)
-        length = decode_length(l_msg)
+        ret = recv_cmd(self.Socket, decode=True)
+        print('[Login] recv_cmd: {}'.format(ret))
+        return ret
 
-        return self.Socket.recv(length, socket.MSG_WAITALL)
+
+    def send_cmd(self, command, **kwargs):
+        send_cmd(self.Socket, command, **kwargs)
+
 
     def login(self):
-        usrName, password = self.getUsrAndPsw()
-         #    input('usrname >> ')
-         # = input('password >> ')
+        try:
+            usrName, password = self.getUsrAndPsw()
 
-        login_command_msg, length_msg = encode_msg(command='Login', Username=usrName, Password=password)
-        print(login_command_msg)
-        self.Socket.send(length_msg)
-        self.Socket.send(login_command_msg)
-        # 收取服务器的回复
-        _, vals = decode_msg(self.recv_cmd())
-        login_flag = vals['LoginStateCode']
-        login_info = vals['LoginMessage']
-        self.ClientId = vals['ID']
+            print('[Login] username: {}, psw: {}'.format(usrName, password))
+            self.send_cmd(command='Login', Username=usrName, Password=password)
+            # 收取服务器的回复
+            _, vals = self.recv_cmd()
+            print('[Login] received cmd: {}, args: {}'.format(_, vals))
+            login_flag = vals['LoginStateCode']
+            login_info = vals['LoginMessage']
+            self.ClientId = vals['ID']
 
-        print(login_flag, vals)
+            print(login_flag, vals)
 
-        if login_flag == '1':
-            self.close()
-            print('activating...')
-            self.Activator(self.Socket, self.ClientId, self.UsrName.text())
-        else:
-            widgets.QMessageBox.warning(self,
-                                        '登陆失败',
-                                        login_info)
-            self.UsrName.clear()
-            self.Psw.clear()
+            if login_flag == 1:
+                self.close()
+                print('activating...')
+                self.Activator(self.Socket, self.ClientId, self.UsrName.text())
+            else:
+                widgets.QMessageBox.warning(self,
+                                            '登陆失败',
+                                            login_info)
+                self.UsrName.clear()
+                self.Psw.clear()
+        except Exception as e:
+            print('$ Exception [Login] err: {}'.format(e))
+            raise e
 
         # while True:
         #     command = input('command >> ')
@@ -110,6 +113,6 @@ if __name__ == '__main__':
     print('connecting...')
 
     app = QApplication(sys.argv)
-    c = LoginPanel(socket_, DefaultConfigSet)
+    c = LoginPanel(socket_)
 
     exit(app.exec_())  # 进入消息循环

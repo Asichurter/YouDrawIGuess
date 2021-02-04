@@ -3,7 +3,7 @@ from PyQt5.Qt import QWidget, QColor, QPixmap, QIcon, QSize, QCheckBox
 from PyQt5.QtWidgets import QHBoxLayout, QVBoxLayout, QPushButton, QSplitter, \
     QComboBox, QLabel, QSpinBox, QLCDNumber
 import PyQt5.QtCore as core
-from PaintBoard import PaintBoard, default_thickness, default_color
+from client.comp.PaintBoard import PaintBoard, default_thickness, default_color
 
 import config
 
@@ -24,7 +24,7 @@ class PaintPanel(QWidget):
         '''
                   初始化成员变量
         '''
-        self.paintBoard = PaintBoard(signals, Parent=self)
+        self.PaintBoard = PaintBoard(signals, Parent=self)
         # 获取颜色列表(字符串类型)
         self.colorList = QColor.colorNames()
 
@@ -60,7 +60,7 @@ class PaintPanel(QWidget):
         # ---------------------------------------------------
 
         # 在主界面左上侧放置画板
-        main_layout.addWidget(self.paintBoard)
+        main_layout.addWidget(self.PaintBoard)
 
         # ---------------------橡皮擦--------------------------
         self.cbtn_Eraser = QCheckBox("使用橡皮擦")
@@ -94,7 +94,7 @@ class PaintPanel(QWidget):
         self.label_penColor.setText("画笔颜色")
         self.pen_color_child_panel.addWidget(self.label_penColor)
         self.comboBox_penColor = QComboBox(self)
-        self.fillColorList(self.comboBox_penColor, self.colorList, default_color)  # 用各种颜色填充下拉列表
+        self.fill_color_list(self.comboBox_penColor, self.colorList, default_color)  # 用各种颜色填充下拉列表
         # ---------------------------------------------------
 
 
@@ -124,18 +124,18 @@ class PaintPanel(QWidget):
             初始化所有组件的事件处理逻辑
         '''
         # 橡皮擦点击事件处理
-        self.cbtn_Eraser.clicked.connect(self.on_cbtn_Eraser_clicked)
+        self.cbtn_Eraser.clicked.connect(self.on_cbtn_eraser_clicked)
 
         # 笔划粗细改变事件处理
         self.spinBox_penThickness.valueChanged.connect(
-            self.on_PenThicknessChange)  # 关联spinBox值变化信号和函数on_PenThicknessChange
+            self.on_pen_thickness_change)  # 关联spinBox值变化信号和函数on_PenThicknessChange
 
         # 笔划颜色改变事件处理
         self.comboBox_penColor.currentIndexChanged.connect(
-            self.on_PenColorChange)  # 关联下拉列表的当前索引变更信号与函数on_PenColorChange
+            self.on_pen_color_change)  # 关联下拉列表的当前索引变更信号与函数on_PenColorChange
 
         # 清空画板按钮事件处理
-        self.btn_Clear.clicked.connect(self.paintBoard.Clear)
+        self.btn_Clear.clicked.connect(self.PaintBoard.clear)
 
         # 退出事件处理
         # self.btn_Quit.clicked.connect(self.Quit)
@@ -143,7 +143,7 @@ class PaintPanel(QWidget):
     def update_inform(self, inform):
         self.InformWidget.setText(inform)
 
-    def fillColorList(self, comboBox, valList, defVal):
+    def fill_color_list(self, comboBox, valList, defVal):
         '''
             填充下拉菜单中的菜单项，使用colorList填充
         '''
@@ -162,77 +162,57 @@ class PaintPanel(QWidget):
         assert default_color != -1, '默认颜色在颜色列表中不存在！'
         comboBox.setCurrentIndex(index_default)
 
-    def setPainting(self, painting):
-        self.paintBoard.set_paint.emit(painting)
+    def set_painting(self, painting):
+        self.PaintBoard.set_paint.emit(painting)
 
-    def set_paint_point_sender(self, sender):
-        self.paintBoard.set_paint_point_sender(sender)
 
-    def set_click_point_sender(self, sender):
-        self.paintBoard.set_click_point_sender(sender)
-
-    def set_release_point_sender(self, sender):
-        self.paintBoard.set_release_point_sender(sender)
-
-    def setThicknessSender(self, sender):
-        self.paintBoard.setThicknessSender(sender)
-
-    def setColorSender(self, sender):
-        self.paintBoard.setColorSender(sender)
-
-    def setEraserSender(self, sender):
-        self.paintBoard.setEraserSender(sender)
-
-    def setClearSender(self, sender):
-        self.paintBoard.setClearSender(sender)
-
-    def setClockDigit(self, number):
+    def set_clock_digit(self, number):
         self.InformClock.display(str(number))
 
-    def setPenColor(self, color):
-        self.paintBoard.setPenColor(color)
+    def set_pen_color(self, color):
+        self.PaintBoard.set_pen_color(color)
         self.comboBox_penColor.setCurrentIndex(self.colorList.index(color))
 
-    def setPenThickness(self, thickness):
-        self.paintBoard.setPenThickness(thickness)
+    def set_pen_thickness(self, thickness):
+        self.PaintBoard.set_pen_thickness(thickness)
         self.spinBox_penThickness.setValue(int(thickness))
 
-    def setEraser(self, e):
+    def set_eraser(self, e):
         self.cbtn_Eraser.setChecked(bool(e))
-        self.paintBoard.setEraser(bool(e))
+        self.PaintBoard.set_eraser(bool(e))
 
-    def setSettingVisible(self, v):
+    def set_setting_visible(self, v):
         self.spinBox_penThickness.setEnabled(v)#.setVisible(v)
         self.comboBox_penColor.setEnabled(v)
         self.cbtn_Eraser.setEnabled(v)
         self.btn_Clear.setEnabled(v)
 
     def extern_click(self, x, y):
-        self.paintBoard.extern_click(x, y)
+        self.PaintBoard.extern_click(x, y)
 
-    def extern_paint(self, x, y):
-        self.paintBoard.extern_paint(x, y)
+    def extern_paint(self, ps):
+        self.PaintBoard.extern_paint(ps)
         # self.update()
 
-    def externClear(self):
-        self.paintBoard.Clear()
+    def extern_clear(self, *args, **kwargs):
+        self.PaintBoard.clear()
 
     def resetLastPoint(self, x, y):
-        self.paintBoard.resetLastPoint(x, y)
+        self.PaintBoard.reset_last_point(x, y)
 
-    def on_PenColorChange(self):
+    def on_pen_color_change(self):
         color_index = self.comboBox_penColor.currentIndex()
         color_str = self.colorList[color_index]
-        self.paintBoard.ChangePenColor(color_str)
+        self.PaintBoard.change_pen_color(color_str)
 
-    def on_PenThicknessChange(self):
+    def on_pen_thickness_change(self):
         penThickness = self.spinBox_penThickness.value()
         # print('thick change to ', penThickness)
-        self.paintBoard.ChangePenThickness(penThickness)
+        self.PaintBoard.change_pen_thickness(penThickness)
 
-    def on_cbtn_Eraser_clicked(self):
+    def on_cbtn_eraser_clicked(self):
         e = self.cbtn_Eraser.isChecked()
-        self.paintBoard.setEraser(e)
+        self.PaintBoard.set_eraser(e)
 
     def Quit(self):
         self.close()
