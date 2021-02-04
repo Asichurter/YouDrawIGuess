@@ -35,16 +35,20 @@ class ClientEngine:
         self.Signals.bind_click_point_signal(self.signal_click_point)
         self.Signals.bind_release_point_signal(self.signal_release_point)
         self.Signals.bind_chat_send_signal(self.signal_send_chat)
-        # todo: setting是小写的，注意同步到server
-        self.Signals.bind_thickness_change_signal(self.get_setting_change_handler('thickness'))
-        self.Signals.bind_color_change_signal(self.get_setting_change_handler('color'))
-        self.Signals.bind_eraser_change_signal(self.get_setting_change_handler('eraser'))
-        self.Signals.bind_clear_signal(self.get_setting_change_handler('clear'))
+        self.Signals.bind_thickness_change_signal(self.get_setting_change_handler('Thickness'))
+        self.Signals.bind_color_change_signal(self.get_setting_change_handler('Color'))
+        self.Signals.bind_eraser_change_signal(self.get_setting_change_handler('Eraser'))
+        self.Signals.bind_clear_signal(self.get_setting_change_handler('Clear'))
 
         self.Signals.bind_game_begin_signal(self.get_send_cmd_handler('BeginGame'))
 
 
+    def set_gamer_name_id(self, gid=0, gname=''):
+        self.GamerId = gid
+        self.GamerUsrName = gname
 
+        if self.GamerId == 0:
+            self.Panel.GameBeginBtn.setVisible(True)
 
 
     # 画板上鼠标移动时画点的对应槽函数
@@ -119,12 +123,29 @@ class ClientEngine:
         self.Panel.add_gamer(gamer_name)
 
 
+    def add_chat_message(self, msg):
+        self.Panel.add_chat_message(msg)
+
+
+    def update_gamers(self, gamers):
+        self.Panel.update_gamers(gamers)
+
+
+    def update_inform(self, inform):
+        self.Panel.update_inform(inform)
+
+
+
     def recv_cmd(self):
         return recv_cmd(self.Socket)
 
 
     def send_cmd(self, command, **kwargs):
         send_cmd(self.Socket, command, **kwargs)
+
+
+    def show(self):
+        self.Panel.show()
 
 
 

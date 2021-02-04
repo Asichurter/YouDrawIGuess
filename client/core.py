@@ -1,46 +1,109 @@
 from PyQt5.QtWidgets import QApplication
 from PyQt5 import QtWidgets as widgets
 from PyQt5 import QtCore as core
+import time
+import socket
+import sys
 
+from client.engine import ClientEngine
+from client.signal import ClientSignal
+from client.comp.LoginPanel import LoginPanel
+from client.handlers import get_handler, check_game_is_end, check_game_is_begin
+
+from log import GlobalLogger as logger
+
+addr = ('103.46.128.53', 16296)
 
 class Client:
 
     def __init__(self):
-        pass
-
-
-    def activate(self, socket_, id, usrname):
-
-        self.Socket = socket_
-        print('in activate...')
-        # self.warn()
-        self.ID = int(id)
-        self.UsrName = usrname
-
-        # 主机才有开始游戏的按钮
-        print('id:', id)
-        if self.ID == 0:
-            self.GameBeginBtn.setVisible(True)
-
-        _, gamers = decode_msg(self.recv_cmd())
-        for g in gamers.keys():
-            self.addGamer(g)
-
-        # get_messasge_box(self)
-        # self.warn()
-
+        self.Engine = None
+        self.Signals = None
         self.GameThread = GameThread(self)
-        self.GameThread.start()
 
-        self.show()
-        print('showing...')
+
+    def init_slots(self):
+        self.Signals.bind_exit_signal(self.exit)
+
+
+    # 激活状态，登录成功后的状态
+    # 主要做游戏开始前的前置准备工作
+    def activate(self, socket_obj, id, usrname):
+        try:
+            self.Signals = ClientSignal()
+            self.init_slots()
+
+            self.Engine = ClientEngine(self.Signals, socket_obj)
+            self.Engine.set_gamer_name_id(id, usrname)
+
+            print('in activate...')
+
+            cmd, gamers = self.Engine.recv_cmd()
+            while cmd != 'GamerInfo':
+                time.sleep(1)           # 忽略其他指令
+                cmd, gamers = self.Engine.recv_cmd()
+
+            for g in gamers.keys():
+                self.Engine.add_gamer(g)
+
+            self.GameThread.start()
+
+            self.Engine.show()
+            print('showing...')
+        except Exception as e:
+            print('$ Exception: ', str(e))
+            raise e
+
+
+    def wait_for_ready(self):
+        while True:
+            cmd, vals = self.Engine.recv_cmd()
+            handler = get_handler('wait_for_ready', cmd)
+            ret = handler(self.Engine, self.Signals, **vals)
+            if ret is not None and check_game_is_begin(ret):
+                break
+
+
+    def game(self):
+        while True:
+            cmd, vals = self.Engine.recv_cmd()
+
+            logger.info('client.core.game',
+                        f'cmd: {cmd}, vals: {vals}')
+
+            handler = get_handler('game', cmd)
+            ret = handler(self.Engine, self.Signals, **vals)
+            if ret is not None and check_game_is_end(ret):
+                break
+
+
+    # 绑定的退出的回调函数
+    def exit(self):
+        self.Engine.Socket.close()
+        self.GameThread.exit(0)
+
 
 class GameThread(core.QThread):
     trigger = core.pyqtSignal()
 
-    def __init__(self, panel, **kwargs):
+    def __init__(self, client, **kwargs):
         super(GameThread, self).__init__(**kwargs)
-        self.Panel = panel
+        self.Client = client
 
     def run(self):
-        self.Panel.wait_for_ready()
+        self.Client.wait_for_ready()
+
+
+if __name__ == '__main__':
+    socket_ = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    socket_.connect(addr)
+    print('connecting...')
+
+    app = QApplication(sys.argv)
+    # app.setQuitOnLastWindowClosed(False)
+    # get_messasge_box(None)
+    game = Client()
+    # game.activate(socket_, 0, 'test')
+    login = LoginPanel(socket_, activator=game.activate)
+
+    exit(app.exec_())  # 进入消息循环

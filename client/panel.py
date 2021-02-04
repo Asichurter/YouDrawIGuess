@@ -6,7 +6,7 @@ import time
 import config
 from client.comp.PaintPanel import PaintPanel
 from client.comp.GamerWidget import GamerWidget
-from LoginPanel import LoginPanel
+# from LoginPanel import LoginPanel
 from client.signal import ClientSignal
 
 
@@ -57,11 +57,11 @@ class GamePanel(widgets.QMainWindow):
 
     # 重置绘图面板
     def reset_paint_panel(self):
-        self.PaintPanel.setPenThickness(config.paint.DefaultThickness)
-        self.PaintPanel.setPenColor(config.paint.DefaultColor)
-        self.PaintPanel.externClear()
-        self.PaintPanel.setEraser(False)
-        self.PaintPanel.setSettingVisible(False)
+        self.PaintPanel.set_pen_thickness(config.paint.DefaultThickness)
+        self.PaintPanel.set_pen_color(config.paint.DefaultColor)
+        self.PaintPanel.extern_clear()
+        self.PaintPanel.set_eraser(False)
+        self.PaintPanel.set_setting_visible(False)
 
 
     def global_layout(self):
@@ -91,7 +91,7 @@ class GamePanel(widgets.QMainWindow):
         self.add_input_dialog()
 
     def init_gamer_layout(self):
-        self.GamerWidgets = [GamerWidget() for i in range(self.Cfg['MaxGamer'])]
+        self.GamerWidgets = [GamerWidget() for i in range(config.game.MaxGamer)]
         for i,w in enumerate(self.GamerWidgets):
             # print(i,' th widget added')
             self.GamerGlobalLayout.addWidget(w, i, 0)
@@ -99,7 +99,7 @@ class GamePanel(widgets.QMainWindow):
         self.GameBeginBtn = widgets.QPushButton('开始游戏')
         self.GameBeginBtn.setVisible(False)
         self.GameBeginBtn.clicked.connect(lambda args: self.Signals.GameBeginSignal.emit())
-        self.GamerGlobalLayout.addWidget(self.GameBeginBtn, self.Cfg['MaxGamer'], 0)
+        self.GamerGlobalLayout.addWidget(self.GameBeginBtn, config.game.MaxGamer, 0)
 
         self.GamerCount = 0
 
@@ -132,7 +132,7 @@ class GamePanel(widgets.QMainWindow):
         '''
         self.Signals.ChatSendSignal.emit(message)
 
-    def add_message(self, message):
+    def add_chat_message(self, message):
         '''
             向消息框中添加一条信息
         '''
@@ -143,26 +143,34 @@ class GamePanel(widgets.QMainWindow):
         '''
             用于初始化界面时，新增玩家
         '''
-        if self.GamerCount == self.Cfg['MaxGamer']:
+        if self.GamerCount == config.game.MaxGamer:
             return False
         else:
             # print(self.GamerCount)
-            self.GamerWidgets[self.GamerCount].setName(name)
+            self.GamerWidgets[self.GamerCount].set_name(name)
             self.GamerCount += 1
             return True
 
-    def update_gamer(self, gamers):
+    def update_gamers(self, gamers):
         '''
         更新玩家信息
         :param gamers: 玩家名称和分数的字典
         '''
-        for i,g in enumerate(gamers.items()):
+        for i,(gname, gscore) in enumerate(gamers):
             # 如果传回的gamer数量比本地gamer数量多，则在本地将这些多的gamer添加
             if i >= self.GamerCount:
-                self.add_gamer(g[0])
+                self.add_gamer(gname)
             else:
-                self.GamerWidgets[i].setName(g[0])
-                self.GamerWidgets[i].setPoint(g[1])
+                self.GamerWidgets[i].set_name(gname)
+                self.GamerWidgets[i].set_point(gscore)
+
+
+    def update_inform(self, inform):
+        self.PaintPanel.update(inform)
+
+
+    def set_painting(self, painting):
+        self.PaintPanel.PaintBoard.set_painting(painting)
 
 
     # 从对话框中获取输入文本
@@ -185,7 +193,7 @@ class GamePanel(widgets.QMainWindow):
 
     def closeEvent(self, e):
         # self.SendTimer.stop()
-        self.GameThread.exit(0)
+        self.Signals.ExitSignal.emit()
         # self.Socket.close()
         exit(0)
 
