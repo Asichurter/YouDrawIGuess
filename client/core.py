@@ -58,6 +58,9 @@ class Client:
     def wait_for_ready(self):
         while True:
             cmd, vals = self.Engine.recv_cmd()
+            logger.info('client.core.wait_for_ready',
+                        'recv cmd: {}, {}'.format(cmd, vals))
+
             handler = get_handler('wait_for_ready', cmd)
             ret = handler(self.Engine, self.Signals, **vals)
             if ret is not None and check_game_is_begin(ret):
