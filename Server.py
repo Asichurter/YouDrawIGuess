@@ -1,18 +1,18 @@
 import socket
 import threading
 
-from config import DefaultConfigSet, ConnectionConfig
+# from config import DefaultConfigSet, ConnectionConfig
 from account import load_account
 import time
 from queue import Queue
 
-from com.talk import recv_cmd, send_cmd
+import config
+from com.talk import recv_cmd, send_cmd, decode_msg
 
 class Server:
-    def __init__(self, cfgs):
-        self.Cfg = cfgs
-        self.MaxCont = self.Cfg['MaxGamer']
-        self.Account = load_account(self.Cfg['UsrAccountAddr'])
+    def __init__(self):
+        self.MaxCont = config.game.MaxGamer
+        self.Account = load_account(config.server.UsrAccountAddr)
 
         assert self.Account is not None, \
             '用户账户文件损坏！检查config中的路径是否正确或者账户文件是否损坏！'
@@ -22,7 +22,7 @@ class Server:
         # 设置服务器使用固定地址
         self.Socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         # 绑定端口
-        self.Socket.bind(('', self.Cfg['ServerPort']))
+        self.Socket.bind(('', config.connect.ServerPort))
 
         self.CntedUsrNumber = 0
         self.UsrSocket = []
@@ -40,44 +40,23 @@ class Server:
 
         self.CmdQueue = Queue()
 
-    def recv_cmd(self, i):
-        return recv_cmd(self.UsrSocket[i])
-        # cur_length = 0
-        # l_msg = b''
-        #
-        # while cur_length < HeaderLength:
-        #     l_msg += self.UsrSocket[i].recv(HeaderLength-cur_length)
-        #     cur_length = len(l_msg)
-        #
-        # print('length msg:', l_msg)
-        # exp_length = decode_length(l_msg)
-        #
-        # cur_length = 0
-        # msg = b''
-        # while cur_length < exp_length:
-        #     print('exp length',exp_length,'cur lenth',cur_length)
-        #     msg += self.UsrSocket[i].recv(exp_length-cur_length)
-        #     cur_length = len(msg)
-        #
-        # return msg
+
+    def recv_cmd(self, i, decode=True):
+        return recv_cmd(self.UsrSocket[i], decode)
+
 
     def send_cmd(self, i, command, **kwargs):
         send_cmd(self.UsrSocket[i], command, **kwargs)
-        # socket_ = self.UsrSocket[i]
-        # msg, l_msg = encode_msg(command=command, **args)
-        # socket_.send(l_msg)
-        # socket_.send(msg)
+
 
     def send_all_cmd(self, command, **kwargs):
         for s_ in self.UsrSocket:
             send_cmd(s_, command, **kwargs)
-            # msg, l_msg = encode_msg(command=command, **args)
-            # s_.send(l_msg)
-            # s_.send(msg)
 
 
     def run(self):
         # self.startTimer(0)
+        print('Server start !')
         self.login_state()
 
         for i in range(self.CntedUsrNumber):
@@ -129,7 +108,7 @@ class Server:
                     self.Answer = vals['Answer']
                     self.Hint = vals['Hint']
                     # 启动倒计时定时器
-                    self.startTimer(timerId=0, downCount=int(self.Cfg['RoundTime']), interval=1)
+                    self.startTimer(timerId=0, downCount=int(config.game.RoundTime), interval=1)
                     print('timer starting!')
 
                 elif cmd == 'Chat':
@@ -189,7 +168,7 @@ class Server:
         print('thread starting!')
         self.UsrSocket[i].settimeout(None)
         while True:
-            msg = self.recv_cmd(i)
+            msg = self.recv_cmd(i, False)
             if msg != b'':
                 print('receiving msg:', msg)
                 self.CmdQueue.put(msg)
@@ -232,7 +211,7 @@ class Server:
 
     def login_state(self):
         # 欢迎socket监听3秒就开始监听主机命令
-        self.Socket.settimeout(self.Cfg['ServerAcceptInterval'])
+        self.Socket.settimeout(config.server.ServerAcceptInterval)
         self.Socket.listen(self.MaxCont)
 
         connect_flag = True
@@ -252,7 +231,7 @@ class Server:
             self.login(self.CntedUsrNumber)
 
             if self.CntedUsrNumber == 0:
-                self.UsrSocket[0].settimeout(self.Cfg['HostCommandInterval'])
+                self.UsrSocket[0].settimeout(config.server.HostCommandInterval)
 
             self.CntedUsrNumber += 1
 
@@ -277,10 +256,9 @@ class Server:
             # 每3秒就切换到监听主机命令
             except socket.timeout:
                 if self.CntedUsrNumber != 0:
-                    self.UsrSocket[0].settimeout(self.Cfg['HostCommandInterval'])
+                    self.UsrSocket[0].settimeout(config.server.HostCommandInterval)
                     try:
-                        host_msg = self.recv_cmd(0)
-                        host_cmd, host_cmd_vals = decode_msg(host_msg)
+                        host_cmd, host_cmd_vals = self.recv_cmd(0, decode=True)
                         print(host_cmd)
 
                         # 如果主机发出开始游戏命令，则返回None代表不再接受玩家连接
@@ -298,8 +276,7 @@ class Server:
         usr_socket.settimeout(None)
         # 先出于等待登录状态
         while True:
-            msg = self.recv_cmd(id)
-            cmd, vals = decode_msg(msg)
+            cmd, vals = self.recv_cmd(id, decode=True)
             # print(cmd, vals)
             if cmd == 'Login':
                 try:
@@ -325,14 +302,13 @@ class Server:
     def sendGamerInfo(self):
         gamer_info = self.getGamerInfo()
         self.send_all_cmd(command='GamerInfo', **gamer_info)
-        # for i in range(len(self.UsrSocket)):
-        #     self.send_cmd(i, command='GamerInfo', **gamer_info)
+
 
     def getGamerInfo(self):
-        info = {}
+        gamers = []
         for n,p in zip(self.UsrName, self.UsrPoint):
-            info[n] = p
-        return info
+            gamers.append((n,p))
+        return {'gamers': gamers}
         # info = 'GamerInfo'
         # for n,p in zip(self.UsrName, self.UsrPoint):
         #     info += '\n{name} {point}'.format(name=n, point=p)
@@ -352,10 +328,11 @@ class Server:
         return self.Answer==answer
 
     def fillPointPool(self):
-        self.PointPool = self.Cfg['GuessPointPool']
+        # todo: 计分方式有点问题
+        self.PointPool = config.game.GuessPointPool
 
     def gamerScore(self, hid, uid):
-        self.UsrPoint[hid] += self.Cfg['DrawPoint']
+        self.UsrPoint[hid] += config.game.DrawPoint
         self.UsrPoint[uid] += self.PointPool.pop(0)
 
     def close(self):
@@ -365,7 +342,7 @@ class Server:
         self.Socket.close()
 
 if __name__ =='__main__':
-    s = Server(DefaultConfigSet)
+    s = Server()
     # p1 = Thread(target=s.run, args=())
     # p1.start()
     # time.sleep(10)
