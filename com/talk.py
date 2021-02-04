@@ -11,7 +11,7 @@ def recv_cmd(socket_obj, decode=True):
         l_msg += socket_obj.recv(remained_len)
         remained_len = get_unreceived_header_len(l_msg)
 
-    print('[recv_msg] length msg:', l_msg)
+    # print('[recv_msg] length msg:', l_msg)
     exp_length = decode_length(l_msg)
 
     cur_length = 0
@@ -22,7 +22,7 @@ def recv_cmd(socket_obj, decode=True):
         cur_length = len(raw_msg)
 
     raw_msg = raw_msg.decode(CodingFormat)
-    print('[recv_msg] raw msg:', raw_msg)
+    # print('[recv_msg] raw msg:', raw_msg)
 
     if decode:
         return decode_msg(raw_msg)
@@ -32,7 +32,7 @@ def recv_cmd(socket_obj, decode=True):
 
 def send_cmd(socket_obj, command, **args):
     body_msg, header_msg = encode_msg(command=command, **args)
-    print('[send_cmd] header: {}, body: {}'.format(header_msg, body_msg))
+    # print('[send_cmd] header: {}, body: {}'.format(header_msg, body_msg))
     # 发送指令时，先发送头部，再发送主体
     socket_obj.send(header_msg)
     socket_obj.send(body_msg)

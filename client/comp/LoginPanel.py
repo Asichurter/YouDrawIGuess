@@ -4,9 +4,11 @@ from PyQt5 import QtGui as gui
 from PyQt5.QtWidgets import QApplication
 import sys
 import socket
+import time
 
 from utils import get_font_stylesheet
 from com.talk import send_cmd, recv_cmd
+from log import GlobalLogger as logger
 
 size = (240, 160)
 addr = ('103.46.128.45', 36654)
@@ -53,7 +55,6 @@ class LoginPanel(widgets.QMainWindow):
 
     def recv_cmd(self):
         ret = recv_cmd(self.Socket, decode=True)
-        print('[Login] recv_cmd: {}'.format(ret))
         return ret
 
 
@@ -65,20 +66,29 @@ class LoginPanel(widgets.QMainWindow):
         try:
             usrName, password = self.getUsrAndPsw()
 
-            print('[Login] username: {}, psw: {}'.format(usrName, password))
+            logger.info('LoginPanel.login',
+                        'username: {}, psw: {}'.format(usrName, password))
             self.send_cmd(command='Login', Username=usrName, Password=password)
             # 收取服务器的回复
-            _, vals = self.recv_cmd()
-            print('[Login] received cmd: {}, args: {}'.format(_, vals))
+
+            while True:
+                cmd, vals = self.recv_cmd()
+                if cmd == 'Login':
+                    break
+                else:
+                    time.sleep(1)
+
+            logger.info('LoginPanel.login',
+                        'login success: {}'.format(vals))
+
             login_flag = vals['LoginStateCode']
             login_info = vals['LoginMessage']
             self.ClientId = vals['ID']
 
-            print(login_flag, vals)
-
             if login_flag == 1:
                 self.close()
-                print('activating...')
+                logger.info('LoginPanel.login',
+                            'activating...')
                 self.Activator(self.Socket, self.ClientId, self.UsrName.text())
             else:
                 widgets.QMessageBox.warning(self,
@@ -87,17 +97,9 @@ class LoginPanel(widgets.QMainWindow):
                 self.UsrName.clear()
                 self.Psw.clear()
         except Exception as e:
-            print('$ Exception [Login] err: {}'.format(e))
+            logger.error('LoginPanel.login','Fail to login, err: {}'.format(e))
             raise e
 
-        # while True:
-        #     command = input('command >> ')
-        #     flag = (command == 'BeginGame')
-        #     command = encode_msg(command=command)
-        #     self.Socket.send(command)
-        #
-        #     if flag:
-        #         break
 
     def getUsrAndPsw(self):
         usr = self.UsrName.text()
