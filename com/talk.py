@@ -3,15 +3,15 @@ import logging
 
 from com.protocol import *
 
-def recv_cmd(socket_obj):
+def recv_cmd(socket_obj, decode=True):
     l_msg = b''
-    remained_len = get_unreceived_header_len(len(l_msg))
+    remained_len = get_unreceived_header_len(l_msg)
 
     while remained_len > 0:
         l_msg += socket_obj.recv(remained_len)
         remained_len = get_unreceived_header_len(l_msg)
 
-    # print('length msg:', l_msg)
+    print('[recv_msg] length msg:', l_msg)
     exp_length = decode_length(l_msg)
 
     cur_length = 0
@@ -21,17 +21,18 @@ def recv_cmd(socket_obj):
         raw_msg += socket_obj.recv(exp_length - cur_length)
         cur_length = len(raw_msg)
 
-    try:
-        msg_body = json.loads(raw_msg)
-    except json.JSONDecodeError as e:
-        logging.error('[recv_cmd] Fail to decode json cmd: {}'.format(e))
-        return {'command': 'none'}
+    raw_msg = raw_msg.decode(CodingFormat)
+    print('[recv_msg] raw msg:', raw_msg)
 
-    return decode_msg(msg_body)
+    if decode:
+        return decode_msg(raw_msg)
+    else:
+        return raw_msg
 
 
 def send_cmd(socket_obj, command, **args):
     body_msg, header_msg = encode_msg(command=command, **args)
+    print('[send_cmd] header: {}, body: {}'.format(header_msg, body_msg))
     # 发送指令时，先发送头部，再发送主体
     socket_obj.send(header_msg)
     socket_obj.send(body_msg)
