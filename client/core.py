@@ -43,15 +43,18 @@ class Client:
                 time.sleep(1)           # 忽略其他指令
                 cmd, gamers = self.Engine.recv_cmd()
 
-            for g in gamers.keys():
-                self.Engine.add_gamer(g)
+            logger.debug('client.core.activate',
+                         'gamers: {}'.format(gamers))
+            for gname, gscore in gamers['gamers']:
+                self.Engine.add_gamer(gname)
 
             self.GameThread.start()
 
             self.Engine.show()
             print('showing...')
         except Exception as e:
-            print('$ Exception: ', str(e))
+            logger.critical('client.core.activate',
+                            'Err when activate: {}'.format(e))
             raise e
 
 
