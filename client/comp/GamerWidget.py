@@ -31,6 +31,6 @@ class GamerWidget(widgets.QWidget):
 
     def set_point(self, point):
         self.GamerPoint = point
-        self.PointLabel.setText(point)
+        self.PointLabel.setText(str(point))
 
 

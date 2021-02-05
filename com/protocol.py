@@ -5,6 +5,8 @@ CodingFormat = 'UTF-8'
 HeaderDummy = b'{"len": "0000"}'
 HeaderLength = len(HeaderDummy)
 
+from log import GlobalLogger as logger
+
 
 def _make_len_header(body_len, digit_num=4):
     return json.dumps({'len': ('%%0%dd' % digit_num) % body_len})
@@ -27,7 +29,8 @@ def decode_length(length_header):
     try:
         length_header = json.loads(length_header.decode(CodingFormat))
     except json.JSONDecodeError as e:
-        logging.error('[decode_length] Fail to decode length header: {}'.format(e))
+        logger.error('protocol.decode_length',
+            '[decode_length] Fail to decode length header: {}'.format(e))
         return 0
 
     return int(length_header.get('len', 0))
@@ -38,7 +41,12 @@ def decode_msg(msg_body) -> (str, dict):
         command = msg_body.pop('command')
         return command, msg_body
     except json.JSONDecodeError as e:
-        logging.error('[decode_msg] Fail to decode msg body: {}'.format(e))
+        logger.error('protocol.decode_msg',
+                     'Fail to decode msg body: {}'.format(e))
+        return 'unknown', {}
+    except Exception as ue:
+        logger.error('protocol.decode_msg',
+                     'unknown err: {}, raw_msg: {}'.format(ue, msg_body))
         return 'unknown', {}
     #
     #

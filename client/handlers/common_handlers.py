@@ -2,6 +2,7 @@ from client.engine import ClientEngine
 from client.signal import ClientSignal
 from client.handlers.util import extract_kwargs
 
+from log import GlobalLogger as logger
 
 def handle_none(engine: ClientEngine,
                 signals: ClientSignal,
@@ -26,6 +27,7 @@ def handle_common_chat(engine: ClientEngine,
 def handle_gamer_info(engine: ClientEngine,
                       signals: ClientSignal,
                       **kwargs):
+
     gamers = extract_kwargs(kwargs, ('gamers', 'Gamers'))
     if gamers is None:
         return

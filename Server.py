@@ -7,7 +7,8 @@ import time
 from queue import Queue
 
 import config
-from com.talk import recv_cmd, send_cmd, decode_msg
+from com.talk import recv_cmd, send_cmd, decode_msg, encode_msg
+from log import GlobalLogger as logger
 
 class Server:
     def __init__(self):
@@ -46,6 +47,9 @@ class Server:
 
 
     def send_cmd(self, i, command, **kwargs):
+        logger.debug('server.send_cmd',
+                     'send cmd: {}, vals: {}'
+                     .format(command, kwargs))
         send_cmd(self.UsrSocket[i], command, **kwargs)
 
 
@@ -73,6 +77,7 @@ class Server:
         self.AnsweredGamer.clear()
 
     def game_state_(self):
+        print('entering game state')
         for cur_gamer_index in range(self.CntedUsrNumber):
             # 每开始一轮游戏，先调用初始化方法
             self.initGameState()
@@ -102,18 +107,19 @@ class Server:
                 msg = self.CmdQueue.get()     # 阻塞队列，处理接受到的命令
                 cmd, vals = decode_msg(msg)
                 if cmd != '':
-                    print('cmd:',cmd,'vals:',vals)
+                    logger.info('server.game',
+                                'cmd: {}, vals: {}'.format(cmd, vals))
 
                 if cmd == 'BeginPaint':
-                    self.Answer = vals['Answer']
-                    self.Hint = vals['Hint']
+                    self.Answer = vals['answer']
+                    self.Hint = vals['hint']
                     # 启动倒计时定时器
                     self.startTimer(timerId=0, downCount=int(config.game.RoundTime), interval=1)
                     print('timer starting!')
 
                 elif cmd == 'Chat':
-                    usr_id = int(vals['ID'])
-                    content = vals['Content']
+                    usr_id = int(vals['id'])
+                    content = vals['content']
 
                     if usr_id not in self.AnsweredGamer and self.checkAnswer(content):
                         # 一旦玩家的答案正确
@@ -170,7 +176,8 @@ class Server:
         while True:
             msg = self.recv_cmd(i, False)
             if msg != b'':
-                print('receiving msg:', msg)
+                logger.debug('server.game_thread',
+                             'receiving msg: {}'.format(msg))
                 self.CmdQueue.put(msg)
 
     def startTimer(self, timerId, downCount=None, interval=1, eps=5e-2):
@@ -183,7 +190,10 @@ class Server:
 
             while self.TimerId[timerId] and flag:
                 time.sleep(interval-eps)
-                msg = b'TimerEvent\nSecond %d' % scs
+
+                # msg = b'TimerEvent\nSecond %d' % scs
+                msg, _ = encode_msg(command='TimerEvent',
+                                    second=str(scs))
                 self.CmdQueue.put(msg)
 
                 flag = (downCount is None) or (scs > 0)
@@ -191,7 +201,8 @@ class Server:
 
             # 对于倒计时时钟，时间到的时候会放入一条时间到的指令
             if not flag:
-                msg = b'Timeout'
+                # msg = b'Timeout'
+                msg, _ = encode_msg(command='Timeout')
                 self.CmdQueue.put(msg)
 
             del self.TimerId[timerId]

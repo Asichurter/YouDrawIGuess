@@ -15,11 +15,15 @@ def check_game_is_end(flag):
 def handle_inform(engine: ClientEngine,
                   signals: ClientSignal,
                   **kwargs):
-    inform = extract_kwargs(kwargs, ('Inform', 'inform'))
-    if inform is None:
-        return
+    try:
+        inform = extract_kwargs(kwargs, ('Content', 'content'))
+        if inform is None:
+            return
 
-    engine.update_inform(inform)
+        engine.update_inform(inform)
+    except Exception as e:
+        logger.error('client.handlers.handle_inform',
+                     'err: {}'.format(e))
 
 
 # 处理本玩家开始绘图的指令
@@ -27,31 +31,38 @@ def handle_begin_paint(engine: ClientEngine,
                        signals: ClientSignal,
                        **kwargs):
 
-    engine.Panel.set_painting(True)
-    engine.Panel.State = 'painting'
-    answer = engine.Panel.get_input_by_dialog(
-        '出题',
-        '请输入谜底',
-        '谜底不能为空',
-        True,
-        lambda s: len(s) <= 20,
-        '谜底长度不能超过20个字符'
-    )
-    hint = engine.Panel.get_input_by_dialog(
-        '出题',
-        '请输入提示',
-        '',
-        False,
-        lambda s: len(s) <= 20,
-        '提示长度不能超过20个字符'
-    )
+    try:
+        engine.Panel.set_painting(True)
+        engine.Panel.State = 'painting'
+        logger.info('client.handlers.handle_begin_paint',
+                    'getting answer and hint')
+        answer = engine.Panel.get_input_by_dialog(
+            '出题',
+            '请输入谜底',
+            '谜底不能为空',
+            True,
+            lambda s: len(s) <= 20,
+            '谜底长度不能超过20个字符'
+        )
+        hint = engine.Panel.get_input_by_dialog(
+            '出题',
+            '请输入提示',
+            '',
+            False,
+            lambda s: len(s) <= 20,
+            '提示长度不能超过20个字符'
+        )
 
-    logger.info('client.handlers.handle_begin_paint',
-                '谜题: {}, 提示: {}'.format(answer, hint))
+        logger.info('client.handlers.handle_begin_paint',
+                    '谜题: {}, 提示: {}'.format(answer, hint))
 
-    engine.send_cmd(command=CMD_BEGIN_PAINT, answer=answer, hint=hint)
-    # 只有要画图的人才能看到设置面板
-    engine.Panel.PaintPanel.set_setting_visible(True)
+        engine.send_cmd(command=CMD_BEGIN_PAINT, answer=answer, hint=hint)
+        # 只有要画图的人才能看到设置面板
+        engine.Panel.PaintPanel.set_setting_visible(True)
+
+    except BaseException as e:
+        logger.error('client.handlers.handle_begin_paint',
+                     'err: {}'.format(e))
 
 
 # 处理本玩家停止绘图的指令

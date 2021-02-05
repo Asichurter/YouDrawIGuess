@@ -4,16 +4,16 @@ from PyQt5 import QtCore as core
 import sys
 import socket
 import time
-import struct
 
 from config import DefaultConfigSet
 from PaintPanel import PaintPanel
 from GamerWidget import GamerWidget
-from LoginPanel import LoginPanel
+from client.comp.LoginPanel import LoginPanel
 from com.talk import recv_cmd, send_cmd
 
 
 addr = ('103.46.128.45', 36654)
+
 # a = s.HTTPServer()
 
 def dummy():
@@ -189,7 +189,7 @@ class GamePanel(widgets.QMainWindow):
 
             # 接收到可以画画的命令
             elif cmd == 'BeginPaint':
-                self.PaintPanel.setPainting(True)
+                self.PaintPanel.set_painting(True)
                 self.State = 'Painting'
                 answer = self.get_input_by_dialog('出题',
                                                   '请输入谜底',
@@ -206,10 +206,10 @@ class GamePanel(widgets.QMainWindow):
                 print('谜底:', answer, '提示:', hint)
                 self.send_cmd(command='BeginPaint', Answer=answer, Hint=hint)
                 # 只有要画图的人才能看到设置面板
-                self.PaintPanel.setSettingVisible(True)
+                self.PaintPanel.set_setting_visible(True)
 
             elif cmd == 'StopPaint':
-                self.PaintPanel.setPainting(False)
+                self.PaintPanel.set_painting(False)
                 # self.PaintPanel.externClear()
                 self.State = 'Waiting'
 
@@ -232,7 +232,7 @@ class GamePanel(widgets.QMainWindow):
                                              y=int(vals['Y']))
 
             elif cmd == 'TimerEvent':
-                self.PaintPanel.setClockDigit(vals['Second'])
+                self.PaintPanel.set_clock_digit(vals['Second'])
 
 
             elif cmd == 'EndGame':
@@ -241,23 +241,23 @@ class GamePanel(widgets.QMainWindow):
             elif cmd == 'SettingChanged':
                 for k,v in vals.items():
                     if k == 'Color':
-                        self.PaintPanel.setPenColor(v)
+                        self.PaintPanel.set_pen_color(v)
                     elif k == 'Thickness':
-                        self.PaintPanel.setPenThickness(v)
+                        self.PaintPanel.set_pen_thickness(v)
                     elif k == 'Eraser':
-                        self.PaintPanel.setEraser(v)
+                        self.PaintPanel.set_eraser(v)
                     elif k == 'Clear':
-                        self.PaintPanel.externClear()
+                        self.PaintPanel.extern_clear()
 
             elif cmd == 'NewRound':
                 self.resetPaintPanel()
 
     def resetPaintPanel(self):
-        self.PaintPanel.setPenThickness(self.Cfg['DefaultThickness'])
-        self.PaintPanel.setPenColor(self.Cfg['DefaultColor'])
-        self.PaintPanel.externClear()
-        self.PaintPanel.setEraser(False)
-        self.PaintPanel.setSettingVisible(False)
+        self.PaintPanel.set_pen_thickness(self.Cfg['DefaultThickness'])
+        self.PaintPanel.set_pen_color(self.Cfg['DefaultColor'])
+        self.PaintPanel.extern_clear()
+        self.PaintPanel.set_eraser(False)
+        self.PaintPanel.set_setting_visible(False)
 
 
     def send_click_point(self, point):
@@ -374,7 +374,7 @@ class GamePanel(widgets.QMainWindow):
             return False
         else:
             # print(self.GamerCount)
-            self.GamerWidgets[self.GamerCount].setName(name)
+            self.GamerWidgets[self.GamerCount].set_name(name)
             self.GamerCount += 1
             return True
 
@@ -388,8 +388,8 @@ class GamePanel(widgets.QMainWindow):
             if i >= self.GamerCount:
                 self.addGamer(g[0])
             else:
-                self.GamerWidgets[i].setName(g[0])
-                self.GamerWidgets[i].setPoint(g[1])
+                self.GamerWidgets[i].set_name(g[0])
+                self.GamerWidgets[i].set_point(g[1])
 
     def get_input_by_dialog(self, title, label, warning, compulsory=False, textFilter=None, textFilterMsg=None):
         self.input_val = None

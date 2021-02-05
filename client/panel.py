@@ -146,7 +146,7 @@ class GamePanel(widgets.QMainWindow):
         if self.GamerCount == config.game.MaxGamer:
             return False
         else:
-            # print(self.GamerCount)
+
             self.GamerWidgets[self.GamerCount].set_name(name)
             self.GamerCount += 1
             return True
@@ -166,7 +166,7 @@ class GamePanel(widgets.QMainWindow):
 
 
     def update_inform(self, inform):
-        self.PaintPanel.update(inform)
+        self.PaintPanel.update_inform(inform)
 
 
     def set_painting(self, painting):
@@ -176,7 +176,7 @@ class GamePanel(widgets.QMainWindow):
     # 从对话框中获取输入文本
     def get_input_by_dialog(self, title, label, warning, compulsory=False, textFilter=None, textFilterMsg=None):
         self.InputVal = None
-        self.Signal.InputDialogSignal.emit(title,
+        self.Signals.InputDialogSignal.emit(title,
                                            label,
                                            warning,
                                            compulsory,
@@ -199,22 +199,22 @@ class GamePanel(widgets.QMainWindow):
 
 
     def signal_input_dialog(self, title, label, warning, compulsory=True, textFilter=None, textFilterMsg=''):
-        # print('entering get_text_by_dialog...')
+        print('entering get_text_by_dialog...')
         assert not (textFilter is not None and textFilterMsg is None), \
             '设置文本过滤器时，必须给定过滤提示信息'
 
         while True:
             # print('entering answer...')
-            text, okpreessed =  widgets.QInputDialog.getText(self.Panel, title, label,
+            text, okpreessed =  widgets.QInputDialog.getText(self, title, label,
                                                             widgets.QLineEdit.Normal, "")
             if textFilter is not None and not textFilter(text):
-                widgets.QMessageBox.warning(self.Panel,
+                widgets.QMessageBox.warning(self,
                                             '非法操作',
                                             textFilterMsg,
                                             widgets.QMessageBox.Yes)
                 continue
             if compulsory and (not okpreessed or text == ''):
-                widgets.QMessageBox.warning(self.Panel,
+                widgets.QMessageBox.warning(self,
                                             '非法操作',
                                             warning,
                                             widgets.QMessageBox.Yes)

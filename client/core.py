@@ -13,6 +13,7 @@ from client.handlers import get_handler, check_game_is_end, check_game_is_begin
 from log import GlobalLogger as logger
 
 addr = ('103.46.128.53', 16296)
+# addr = ('127.0.0.1', 7890)
 
 class Client:
 
@@ -43,8 +44,6 @@ class Client:
                 time.sleep(1)           # 忽略其他指令
                 cmd, gamers = self.Engine.recv_cmd()
 
-            logger.debug('client.core.activate',
-                         'gamers: {}'.format(gamers))
             for gname, gscore in gamers['gamers']:
                 self.Engine.add_gamer(gname)
 
@@ -60,15 +59,21 @@ class Client:
 
     def wait_for_ready(self):
         while True:
-            cmd, vals = self.Engine.recv_cmd()
-            logger.info('client.core.wait_for_ready',
-                        'recv cmd: {}, {}'.format(cmd, vals))
+            try:
+                cmd, vals = self.Engine.recv_cmd()
+                logger.info('client.core.wait_for_ready',
+                            'recv cmd: {}, {}'.format(cmd, vals))
 
-            handler = get_handler('wait_for_ready', cmd)
-            ret = handler(self.Engine, self.Signals, **vals)
-            if ret is not None and check_game_is_begin(ret):
-                break
+                handler = get_handler('wait_for_ready', cmd)
+                ret = handler(self.Engine, self.Signals, **vals)
+                if ret is not None and check_game_is_begin(ret):
+                    break
+            except Exception as e:
+                logger.error('client.core.activate',
+                             'err when handling, cmd: {}, vals: {}, err: {}'
+                             .format(cmd, vals, e))
 
+        self.game()
 
     def game(self):
         while True:
@@ -81,6 +86,9 @@ class Client:
             ret = handler(self.Engine, self.Signals, **vals)
             if ret is not None and check_game_is_end(ret):
                 break
+
+            logger.info('client.core.game',
+                        f'cmd: {cmd} executed')
 
 
     # 绑定的退出的回调函数

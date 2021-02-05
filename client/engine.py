@@ -8,6 +8,8 @@ from client.signal import ClientSignal
 from client.panel import GamePanel
 import config
 
+from log import GlobalLogger as logger
+
 
 class ClientEngine:
 
@@ -64,12 +66,12 @@ class ClientEngine:
     def signal_click_point(self, point):
         x = point.x()
         y = point.y()
-        send_cmd(self.Socket, command='ClickPoint', X=x, Y=y)
+        self.send_cmd(command='ClickPoint', X=x, Y=y)
 
 
     # 画板上鼠标松开的槽函数
     # 立刻发送所有点
-    def signal_release_point(self, point):
+    def signal_release_point(self):
         time.sleep(0.2)
         self.immediate_send_all_points()
 
@@ -137,10 +139,15 @@ class ClientEngine:
 
 
     def recv_cmd(self):
-        return recv_cmd(self.Socket)
+        ret = recv_cmd(self.Socket)
+        logger.debug('client.engine',
+                     'recv cmd: {}'.format(ret))
+        return ret
 
 
     def send_cmd(self, command, **kwargs):
+        logger.debug('client.engine',
+                     'send cmd: {}, {}'.format(command, kwargs))
         send_cmd(self.Socket, command, **kwargs)
 
 
