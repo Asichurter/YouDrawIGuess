@@ -76,6 +76,8 @@ class LoginPanel(widgets.QMainWindow):
                 if cmd == 'Login':
                     break
                 else:
+                    logger.warning('LoginPanel.login',
+                                   'recv {} cmd with {}, skip'.format(cmd, vals))
                     time.sleep(1)
 
             logger.info('LoginPanel.login',

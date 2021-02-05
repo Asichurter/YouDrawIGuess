@@ -6,6 +6,7 @@ from PyQt5.QtCore import pyqtSignal
 
 import time
 
+from log import GlobalLogger as logger
 from client.signal import ClientSignal
 
 board_resolution = (1240, 860)
@@ -71,7 +72,6 @@ class PaintBoard(QWidget):
 
 
     def set_eraser(self, e):
-        print('eraser setting changed to', e)
         self.EraserMode = e
         if self.Painting:
             self.Signals.EraserChangeSignal.emit(e)
@@ -97,6 +97,7 @@ class PaintBoard(QWidget):
         self.PenColor = QColor(color)
 
     def change_pen_thickness(self, thickness=default_thickness):
+
         if self.Painting:
             self.Signals.ThicknessChangeSignal.emit(thickness)
             # self.ThicknessSender.emit(thickness)
