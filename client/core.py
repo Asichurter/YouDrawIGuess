@@ -47,6 +47,7 @@ class Client:
             for gname, gscore in gamers['gamers']:
                 self.Engine.add_gamer(gname)
 
+            # 启动一个额外的线程用于background任务
             self.GameThread.start()
 
             self.Engine.show()
@@ -77,18 +78,25 @@ class Client:
 
     def game(self):
         while True:
-            cmd, vals = self.Engine.recv_cmd()
+            try:
+                cmd, vals = self.Engine.recv_cmd()
 
-            logger.info('client.core.game',
-                        f'cmd: {cmd}, vals: {vals}')
+                logger.info('client.core.game',
+                            f'cmd: {cmd}, vals: {vals}')
 
-            handler = get_handler('game', cmd)
-            ret = handler(self.Engine, self.Signals, **vals)
-            if ret is not None and check_game_is_end(ret):
-                break
+                handler = get_handler('game', cmd)
+                ret = handler(self.Engine, self.Signals, **vals)
+                if ret is not None and check_game_is_end(ret):
+                    break
 
-            logger.info('client.core.game',
-                        f'cmd: {cmd} executed')
+                logger.info('client.core.game',
+                            f'cmd: {cmd} executed')
+
+            except BaseException as e:
+                logger.error('client.core.game',
+                             'err when game: {}'.format(e))
+
+        self.exit()
 
 
     # 绑定的退出的回调函数
