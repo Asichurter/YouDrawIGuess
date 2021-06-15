@@ -11,7 +11,7 @@ def handle_none(server,
 # 处理服务器端游戏开始指令
 def handle_game_begin(server,
                       **kwargs):
-    logger.info('server.login_state', 'game is begun')
+    logger.info('server.handle_game_begin', 'game is begun')
     # 设置游戏开始flag，停止接受更多玩家连接
     server.GameBeginFlag.write_val(False)
     # 向所有玩家发送游戏开始指令

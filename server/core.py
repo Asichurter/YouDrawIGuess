@@ -294,25 +294,29 @@ class Server:
             if gamer is None:       # accept内部逻辑会判断是否停止接受更多玩家，以None返回
                 break
 
-            # 默认第一个连接的是主机，启动主机监听线程
+            # 每一个连接的套接字都启用一个线程处理登录
+            login_thread = threading.Thread(None,
+                                      target=gamer.check_login,
+                                      args=(self,))
+            login_thread.start()
+
+            # 主机线程处理
             if len(self.UnloggedGamers) == 1:
+                # 必须等到主机登录线程结束以后再启动主机的监听线程
+                # 同时，主机没有登录成功时，阻塞其他玩家的登录
+                login_thread.join()
                 host_thread = threading.Thread(None,
                                                target=self.handle_host_begin_game_cmd,
                                                args=(0,))
-                host_thread.start()
                 login_threads.append(host_thread)
-
-            # 每一个连接的套接字都启用一个线程处理登录
-            thread = threading.Thread(None,
-                                      target=gamer.check_login,
-                                      args=(self,))
-            login_threads.append(thread)
-            thread.start()
+                host_thread.start()
+            else:
+                login_threads.append(login_thread)
 
         # 等待所有玩家登录就绪
         # todo: 玩家登录目前没有超时检查
-        for thread in login_threads:
-            thread.join()
+        for login_thread in login_threads:
+            login_thread.join()
 
         # 关闭欢迎socket
         self.WelcomeSocket.close()
@@ -328,7 +332,7 @@ class Server:
             try:
                 con_socket, addr = self.WelcomeSocket.accept()
                 logger.info('Server.login', 'new gamer connecting...')
-                gamer = UnloggedGamer(addr, con_socket)
+                gamer = UnloggedGamer(len(self.UnloggedGamers), addr, con_socket)
                 # 接受到新玩家以后加入到gamer列表中
                 # 由于accept套接字的时候是串行的，因此不需要互斥读写未登录玩家列表
                 self.UnloggedGamers.append(gamer)

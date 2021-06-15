@@ -5,9 +5,11 @@ from com.talk import *
 from server.handlers import get_handler
 from vals.state import *
 from utils.thread_utils import ThreadValue
+from log import GlobalLogger as logger
 
 class UnloggedGamer:
-    def __init__(self, addr, socket_obj):
+    def __init__(self, id_, addr, socket_obj):
+        self.UnloggedID = id_
         self.Address = addr
         self.Socket = socket_obj
         self.SocketSendLock = Lock()
@@ -27,7 +29,7 @@ class UnloggedGamer:
 
     def check_login(self, server):
         self.Socket.settimeout(None)    # 将Socket超时设置为无穷
-        while self.LoginFlag.get_val():
+        while not self.LoginFlag.get_val():
             cmd, body = self.recv_cmd()
             handler = get_handler(S_LOGIN, cmd)
             handler(server, gamer=self, **body)
@@ -35,7 +37,7 @@ class UnloggedGamer:
 class Gamer(UnloggedGamer):
     def __init__(self, unlogged_gamer: UnloggedGamer,
                  gamer_id, gamer_name):
-        super().__init__(unlogged_gamer.Address, unlogged_gamer.Socket)
+        super().__init__(-1, unlogged_gamer.Address, unlogged_gamer.Socket)
         self.Id = gamer_id
         self.UserName = gamer_name
         self.Point = 0
