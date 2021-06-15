@@ -3,8 +3,9 @@ all_config = {
     'WindowSize':(1920,960),
     'PaintPanelSize':(1280, 960),
     'PaintBoardSize':(1240, 860),
-    'ServerAddr':'mnkj0fyj.shenzhuo.vip',
+    'ServerAddr':'2721988cs4.wicp.vip',
     'ServerPort':7890,
+    'ServerMapPort': 44646,
     'MaxGamer':4,
     'MaxStringLength':20,
     'MinStringLength':1,
@@ -38,6 +39,7 @@ class ConnectConfig:
     def __init__(self):
         self.ServerAddr = all_config['ServerAddr']
         self.ServerPort = all_config['ServerPort']
+        self.ServerMapPort = all_config['ServerMapPort']
 
 connect = ConnectConfig()
 

@@ -14,9 +14,9 @@ class UnloggedGamer:
         self.SocketRcvLock = Lock()
         self.LoginFlag = ThreadValue(False)
 
-    def send_cmd(self, cmd, **kwargs):
+    def send_cmd(self, command, **kwargs):
         self.SocketSendLock.acquire()
-        send_cmd(self.Socket, cmd, **kwargs)
+        send_cmd(self.Socket, command, **kwargs)
         self.SocketSendLock.release()
 
     def recv_cmd(self, decode=True):

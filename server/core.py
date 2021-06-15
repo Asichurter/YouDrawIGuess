@@ -13,7 +13,7 @@ from log import GlobalLogger as logger
 from server.gamer import Gamer, UnloggedGamer
 from server.handlers import get_handler
 from server.account import GamerAccount
-from vals.command import make_gamer_info_command, CMD_BEGIN_GAME
+from vals.command import make_gamer_info_command, CMD_BEGIN_GAME, make_chat_command
 
 
 class Server:
@@ -83,7 +83,7 @@ class Server:
         for t in self.GamerCmdListenThreads:
             t.start()
 
-        self.game_state_()
+        self.game_state()
 
     def initGameState(self):
         self.fillPointPool()
@@ -91,8 +91,9 @@ class Server:
 
     def game_state(self):
         while True:
-            self.send_all_cmd(command='Chat', Content='hello world',
-                              name='server')
+            self.send_all_cmd(**make_chat_command(id_=-1,
+                                                  name='服务器',
+                                                  content='游戏开始的测试信息'))
             time.sleep(2)
 
     def game_state_(self):
@@ -264,11 +265,15 @@ class Server:
                 return
 
     def handle_host_begin_game_cmd(self, host_index=0):
+        logger.debug('handle_host_cmd',
+                     'host handling threading start!')
         while True:
             if len(self.UnloggedGamers) != 0:
                 cmd, body = self.UnloggedGamers[host_index].recv_cmd()
+                logger.debug('handle_host_cmd',
+                             f'cmd: {cmd}, body:{body}')
                 handler = get_handler(S_LOGIN, cmd, supress_log=True)
-                handler(self, body)
+                handler(self, gamer=self.UnloggedGamers[host_index], **body)
 
                 # 该线程如果接收到了主机有关游戏开始的命令后就退出
                 if cmd == CMD_BEGIN_GAME:
@@ -294,6 +299,7 @@ class Server:
                 host_thread = threading.Thread(None,
                                                target=self.handle_host_begin_game_cmd,
                                                args=(0,))
+                host_thread.start()
                 login_threads.append(host_thread)
 
             # 每一个连接的套接字都启用一个线程处理登录

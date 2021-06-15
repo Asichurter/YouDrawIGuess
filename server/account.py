@@ -23,7 +23,7 @@ class GamerAccount:
             return False, '密码不正确', -1
         else:
             self.Lock.acquire()
-            self.LoggedGamers.append(username)  # 已登录的玩家添加到account的列表中便于查询
             gamer_id = len(self.LoggedGamers)
+            self.LoggedGamers.append(username)  # 已登录的玩家添加到account的列表中便于查询
             self.Lock.release()
             return True, '登陆成功', gamer_id

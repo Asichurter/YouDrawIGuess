@@ -10,10 +10,10 @@ from client.signal import ClientSignal
 from client.comp.LoginPanel import LoginPanel
 from client.handlers import get_handler, check_game_is_end, check_game_is_begin
 from vals.state import *
-
 from log import GlobalLogger as logger
+import config
 
-addr = ('103.46.128.53', 16296)
+addr = (config.connect.ServerAddr, config.connect.ServerMapPort)
 # addr = ('127.0.0.1', 7890)
 
 class Client:
@@ -30,13 +30,13 @@ class Client:
 
     # 激活状态，登录成功后的状态
     # 主要做游戏开始前的前置准备工作
-    def activate(self, socket_obj, id, usrname):
+    def activate(self, socket_obj, id_, usrname):
         try:
             self.Signals = ClientSignal()
             self.init_slots()
 
             self.Engine = ClientEngine(self.Signals, socket_obj)
-            self.Engine.set_gamer_name_id(id, usrname)
+            self.Engine.set_gamer_name_id(id_, usrname)
 
             print('in activate...')
 

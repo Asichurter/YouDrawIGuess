@@ -10,9 +10,9 @@ from utils.style_utils import get_font_stylesheet
 from com.talk import send_cmd, recv_cmd
 from log import GlobalLogger as logger
 from vals.command import CMD_LOGIN_RESULT, make_login_command, parse_login_result_command
+import config
 
 size = (240, 160)
-addr = ('103.46.128.45', 36654)
 
 class LoginPanel(widgets.QMainWindow):
     def __init__(self, socket_obj, activator=None):
@@ -87,7 +87,7 @@ class LoginPanel(widgets.QMainWindow):
 
             # login_status_code = body['LoginStateCode']
             # login_info = body['LoginMessage']
-            login_status_code, ID, login_info = parse_login_result_command(body)
+            login_status_code, login_info, ID = parse_login_result_command(body)
             self.ClientId = ID
             if login_status_code == 1:
                 self.close()
