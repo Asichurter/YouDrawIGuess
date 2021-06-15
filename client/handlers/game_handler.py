@@ -1,9 +1,9 @@
 from client.engine import ClientEngine
 from client.signal import ClientSignal
-from client.handlers.util import extract_kwargs
+from utils.handler_utils import extract_kwargs
 
 from log import GlobalLogger as logger
-from com.command import *
+from vals.command import *
 
 GAME_END_FLAG = '__GAME_END__'
 
@@ -16,7 +16,7 @@ def handle_inform(engine: ClientEngine,
                   signals: ClientSignal,
                   **kwargs):
     try:
-        inform = extract_kwargs(kwargs, ('Content', 'content'))
+        inform = extract_kwargs(kwargs, ('Content', 'content'), 'client.handlers.handle_inform')
         if inform is None:
             return
 
@@ -79,7 +79,7 @@ def handle_paint_point(engine: ClientEngine,
                        signals: ClientSignal,
                        **kwargs):
 
-    points = extract_kwargs(kwargs, ('points', 'Points'))
+    points = extract_kwargs(kwargs, ('points', 'Points'), 'client.handlers.handle_paint_point')
     if points is None:
         return
 
@@ -91,8 +91,8 @@ def handle_click_point(engine: ClientEngine,
                        signals: ClientSignal,
                        **kwargs):
 
-    x = extract_kwargs(kwargs, ('X', 'x'))
-    y = extract_kwargs(kwargs, ('Y', 'y'))
+    x = extract_kwargs(kwargs, ('X', 'x'), 'client.handlers.handle_click_point')
+    y = extract_kwargs(kwargs, ('Y', 'y'), 'client.handlers.handle_click_point')
     if x is None or y is None:
         return
 
@@ -103,7 +103,7 @@ def handle_click_point(engine: ClientEngine,
 def handle_timer_event(engine: ClientEngine,
                        signals: ClientSignal,
                        **kwargs):
-    digit = extract_kwargs(kwargs, ('Second', 'second'))
+    digit = extract_kwargs(kwargs, ('Second', 'second'), 'client.handlers.handle_timer_event')
     if digit is None:
         return
 

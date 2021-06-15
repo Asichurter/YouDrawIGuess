@@ -11,8 +11,9 @@ class Logger(object):
     ch = logging.StreamHandler()
 
     def __init__(self):
-        self.logger = logging.getLogger()
-        self.logger.setLevel(5)
+        self.Logger = logging.getLogger()
+        self.Logger.setLevel(5)
+        self.Enabled = True
         # if not self.logger.handlers:
         #     # 如果self.logger没有handler， 就执行以下代码添加handler
         #     self.logger.setLevel(logging.DEBUG)
@@ -34,31 +35,44 @@ class Logger(object):
         #     # 给logger添加handler
         #     self.logger.addHandler(fh)
 
+    def set_enabled(self, enabled):
+        self.Enabled = enabled
+
     def debug(self, module, message):
+        if not self.Enabled:
+            return
         self.font_color('\033[0;34m%s\033[0m', module)
-        self.logger.debug(message)
+        self.Logger.debug(message)
 
     def info(self, module, message):
+        if not self.Enabled:
+            return
         self.font_color('\033[0;32m%s\033[0m', module)
-        self.logger.info(message)
+        self.Logger.info(message)
 
     def warning(self, module, message):
+        if not self.Enabled:
+            return
         self.font_color('\033[0;33m%s\033[0m', module)
-        self.logger.warning(message)
+        self.Logger.warning(message)
 
     def error(self, module, message):
+        if not self.Enabled:
+            return
         self.font_color('\033[0;31m%s\033[0m', module)
-        self.logger.error(message)
+        self.Logger.error(message)
 
     def critical(self, module, message):
+        if not self.Enabled:
+            return
         self.font_color('\033[0;35m%s\033[0m', module)
-        self.logger.critical(message)
+        self.Logger.critical(message)
 
     def font_color(self, color, module):
         # 不同的日志输出不同的颜色
         formatter = logging.Formatter(color % f'%(asctime)s - %(levelname)s - [{module}] %(message)s')
         self.ch.setFormatter(formatter)
-        self.logger.addHandler(self.ch)
+        self.Logger.addHandler(self.ch)
 
 
 if __name__ == "__main__":

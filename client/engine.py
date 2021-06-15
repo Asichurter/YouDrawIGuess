@@ -77,8 +77,8 @@ class ClientEngine:
 
 
     # 返回获得发送指令的处理函数
-    def get_send_cmd_handler(self, cmd):
-        def sender(**kwargs):
+    def get_send_cmd_handler(self, cmd, **kwargs):
+        def sender():
             self.send_cmd(command=cmd, **kwargs)
         return sender
 

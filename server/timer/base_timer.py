@@ -81,3 +81,8 @@ class BaseTimer:
         self.ExitCallbacks.append(cb)
 
 
+    # 设置定时器间隔休眠的调整数值，调整给其他处理函数留出处理的时间
+    def set_eps(self, eps):
+        self.Eps = eps
+
+

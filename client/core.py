@@ -9,6 +9,7 @@ from client.engine import ClientEngine
 from client.signal import ClientSignal
 from client.comp.LoginPanel import LoginPanel
 from client.handlers import get_handler, check_game_is_end, check_game_is_begin
+from vals.state import *
 
 from log import GlobalLogger as logger
 
@@ -65,7 +66,7 @@ class Client:
                 logger.info('client.core.wait_for_ready',
                             'recv cmd: {}, {}'.format(cmd, vals))
 
-                handler = get_handler('wait_for_ready', cmd)
+                handler = get_handler(C_WAIT_FOR_READY, cmd)
                 ret = handler(self.Engine, self.Signals, **vals)
                 if ret is not None and check_game_is_begin(ret):
                     break
@@ -84,7 +85,7 @@ class Client:
                 logger.info('client.core.game',
                             f'cmd: {cmd}, vals: {vals}')
 
-                handler = get_handler('game', cmd)
+                handler = get_handler(C_GAME, cmd)
                 ret = handler(self.Engine, self.Signals, **vals)
                 if ret is not None and check_game_is_end(ret):
                     break
@@ -101,7 +102,7 @@ class Client:
 
     # 绑定的退出的回调函数
     def exit(self):
-        self.Engine.Socket.close()
+        self.Engine.WelcomeSocket.close()
         self.GameThread.exit(0)
 
 

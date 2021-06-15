@@ -3,15 +3,16 @@ from .ready_handler import *
 from .game_handler import *
 
 from log import GlobalLogger as logger
-from com.command import *
+from vals.command import *
+from vals.state import *
 
 __handler_switch = {
-    'wait_for_ready': {
+    C_WAIT_FOR_READY: {
         CMD_CHAT: handle_common_chat,
         CMD_GAMER_INFO: handle_gamer_info,
         CMD_BEGIN_GAME: handle_begin_game
     },
-    'game': {
+    C_GAME: {
         CMD_CHAT: handle_common_chat,
         CMD_GAMER_INFO: handle_gamer_info,
         CMD_INFORM: handle_inform,

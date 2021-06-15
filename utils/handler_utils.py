@@ -2,7 +2,7 @@ from log import GlobalLogger as logger
 
 
 # 从多个待选key中提取出唯一的val
-def extract_kwargs(kwargs, key_list):
+def extract_kwargs(kwargs, key_list, module):
     hit_count = 0
     final_val = None
 
@@ -13,12 +13,12 @@ def extract_kwargs(kwargs, key_list):
             final_val = val
 
     if hit_count == 0:
-        logger.warning('client.handlers.extract_kwargs',
+        logger.warning(module,
                        f'no hit of keys: {key_list} in kwargs: {kwargs}')
         return None
     elif hit_count == 1:
         return final_val
     else:
-        logger.warning('client.handlers.extract_kwargs',
+        logger.warning(module,
                        f'more than 1 hit of keys: {key_list} in kwargs: {kwargs}')
-        return None
+        return final_val

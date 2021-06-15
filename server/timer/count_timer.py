@@ -31,13 +31,16 @@ class GametimeCountTimer(TimeCountTimer):
         super(GametimeCountTimer, self).__init__(time_interval, max_ticks, down_count)
         self.Queue = msg_queue
 
-
+    # 实际的时间戳处理函数
+    # 将一条带有time事件的信息放入队列进行消费
     def process_count(self, time_count):
         msg, _ = encode_msg(command='TimerEvent',
                          second=str(time_count))
         self.Queue.put(msg)
 
 
+    # 超时事件处理函数
+    # 将一条带有timeout事件的信息放入队列进行消费
     def timeout_event(self, tick, *args, **kwargs):
         msg, _ = encode_msg('Timeout')
         self.Queue.put(msg)

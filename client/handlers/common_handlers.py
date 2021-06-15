@@ -1,8 +1,9 @@
+from log import GlobalLogger as logger
+
 from client.engine import ClientEngine
 from client.signal import ClientSignal
-from client.handlers.util import extract_kwargs
-
-from log import GlobalLogger as logger
+from utils.handler_utils import extract_kwargs
+from vals.command import parse_chat_command, parse_gamer_info_command
 
 def handle_none(engine: ClientEngine,
                 signals: ClientSignal,
@@ -14,10 +15,10 @@ def handle_none(engine: ClientEngine,
 def handle_common_chat(engine: ClientEngine,
                        signals: ClientSignal,
                        **kwargs):
-    name = extract_kwargs(kwargs, ('name', 'Name'))
-    content = extract_kwargs(kwargs, ('content', 'Content'))
-
+    name, ID, content = parse_chat_command(kwargs)
     if name is None or content is None:
+        logger.warning('client.handle_common_chat',
+                       f'no name or content extracted: {name},{content}')
         return
 
     engine.add_chat_message('{}: {}'.format(name, content))
@@ -27,9 +28,10 @@ def handle_common_chat(engine: ClientEngine,
 def handle_gamer_info(engine: ClientEngine,
                       signals: ClientSignal,
                       **kwargs):
-
-    gamers = extract_kwargs(kwargs, ('gamers', 'Gamers'))
+    gamers = parse_gamer_info_command(kwargs)
     if gamers is None:
+        logger.warning('client.handle_gamer_info'
+                       'gamers were not extracted from command body')
         return
 
     engine.update_gamers(gamers)

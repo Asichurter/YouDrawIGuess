@@ -6,9 +6,10 @@ import sys
 import socket
 import time
 
-from utils import get_font_stylesheet
+from utils.style_utils import get_font_stylesheet
 from com.talk import send_cmd, recv_cmd
 from log import GlobalLogger as logger
+from vals.command import CMD_LOGIN_RESULT, make_login_command, parse_login_result_command
 
 size = (240, 160)
 addr = ('103.46.128.45', 36654)
@@ -68,26 +69,27 @@ class LoginPanel(widgets.QMainWindow):
 
             logger.info('LoginPanel.login',
                         'username: {}, psw: {}'.format(usrName, password))
-            self.send_cmd(command='Login', Username=usrName, Password=password)
+            self.send_cmd(**make_login_command(usrName, password))
+            # self.send_cmd(command='Login', Username=usrName, Password=password)
             # 收取服务器的回复
 
             while True:
-                cmd, vals = self.recv_cmd()
-                if cmd == 'Login':
+                cmd, body = self.recv_cmd()
+                if cmd == CMD_LOGIN_RESULT:
                     break
                 else:
                     logger.warning('LoginPanel.login',
-                                   'recv {} cmd with {}, skip'.format(cmd, vals))
+                                   'recv {} cmd with {}, skip'.format(cmd, body))
                     time.sleep(1)
 
             logger.info('LoginPanel.login',
-                        'login success: {}'.format(vals))
+                        'login success: {}'.format(body))
 
-            login_flag = vals['LoginStateCode']
-            login_info = vals['LoginMessage']
-            self.ClientId = vals['ID']
-
-            if login_flag == 1:
+            # login_status_code = body['LoginStateCode']
+            # login_info = body['LoginMessage']
+            login_status_code, ID, login_info = parse_login_result_command(body)
+            self.ClientId = ID
+            if login_status_code == 1:
                 self.close()
                 logger.info('LoginPanel.login',
                             'activating...')

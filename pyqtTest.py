@@ -48,7 +48,7 @@ class MainWidget(QWidget):
         self.__btn_Clear.setParent(self)  # 设置父对象为本界面
 
         # 将按键按下信号与画板清空函数相关联
-        self.__btn_Clear.clicked.connect(self.__paintBoard.Clear)
+        self.__btn_Clear.clicked.connect(self.__paintBoard.clear)
         sub_layout.addWidget(self.__btn_Clear)
 
         self.__btn_Quit = QPushButton("退出")
@@ -115,11 +115,11 @@ class MainWidget(QWidget):
     def on_PenColorChange(self):
         color_index = self.__comboBox_penColor.currentIndex()
         color_str = self.__colorList[color_index]
-        self.__paintBoard.ChangePenColor(color_str)
+        self.__paintBoard.change_pen_color(color_str)
 
     def on_PenThicknessChange(self):
         penThickness = self.__spinBox_penThickness.value()
-        self.__paintBoard.ChangePenThickness(penThickness)
+        self.__paintBoard.change_pen_thickness(penThickness)
 
     def on_btn_Save_Clicked(self):
         savePath = QFileDialog.getSaveFileName(self, 'Save Your Paint', '.\\', '*.png')
@@ -127,7 +127,7 @@ class MainWidget(QWidget):
         if savePath[0] == "":
             print("Save cancel")
             return
-        image = self.__paintBoard.GetContentAsQImage()
+        image = self.__paintBoard.get_content_as_QImage()
         image.save(savePath[0])
 
     def on_cbtn_Eraser_clicked(self):

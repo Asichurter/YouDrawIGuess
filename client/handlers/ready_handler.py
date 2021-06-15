@@ -1,6 +1,5 @@
 from client.engine import ClientEngine
 from client.signal import ClientSignal
-from client.handlers.util import extract_kwargs
 
 BEGIN_GAME_FALG = '__BEGIN_GAME__'
 
