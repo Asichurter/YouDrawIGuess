@@ -52,6 +52,63 @@ class Gamer(UnloggedGamer):
                              'receiving msg: {}'.format(msg))
                 queue.put(msg)
 
+    def score(self, s):
+        self.Point += s
+
+    def get_info(self):
+        return self.UserName, self.Point
+
+class GamerGroup:
+    def __init__(self):
+        self._GamersLock = Lock()
+        self._Gamers = []
+        self._GamerIdIndexMapping = {}
+
+    def add_gamer(self, gamer, gamer_id):
+        self._GamersLock.acquire()
+        self._GamerIdIndexMapping[gamer_id] = len(self._Gamers)
+        self._Gamers.append(gamer)
+        self._GamersLock.release()
+
+    def get_gamer_by_id(self, id_):
+        gamer_index = self._GamerIdIndexMapping.get(id_, None)
+        if gamer_index is None:
+            logger.error('gamer.GamerGroup',
+                         f'No such a index mapping for gamer id {id_}')
+            return None
+        return self._Gamers[gamer_index]
+
+    def pack_all_gamers_info(self):
+        gamers_info = []
+        for g in self._Gamers:
+            gamers_info.append(g.get_info())
+        return gamers_info
+
+    def send_cmd_by_id(self, id_, command, **kwargs):
+        gamer = self.get_gamer_by_id(id_)
+        gamer.send_cmd(command=command, **kwargs)
+
+    def __iter__(self):
+        return iter(self._Gamers)
+
+    def __len__(self):
+        return len(self._Gamers)
+
+    def __getitem__(self, idx):
+        return self._Gamers[idx]
+
+if __name__ == '__main__':
+    gp = GamerGroup()
+    gp.add_gamer('a', 0)
+    gp.add_gamer('b', 1)
+    gp.add_gamer('c', 2)
+    gp.add_gamer('d', 3)
+
+    for g in gp:
+        print(g)
+
+    print(gp[1])
+
 
 
 

@@ -1,4 +1,5 @@
 import config
+from log import GlobalLogger as logger
 
 class GameLogic:
     def __init__(self, gamer_num):
@@ -8,11 +9,13 @@ class GameLogic:
         self.Answer = ''
         self.Hint = ''
         self.AnsweredGamerIds = []
+        self.CurrentPaintingGamerId = None      # 当前画图的玩家的ID
         self.reset_point_pool()
 
-    def init_game_state(self):
+    def init_game_state(self, cur_painting_gamer_id):
         self.reset_point_pool()
         self.AnsweredGamerIds.clear()
+        self.set_current_painting_gamer_id(cur_painting_gamer_id)
 
     def add_answered_gamer_id(self, id_):
         self.AnsweredGamerIds.append(id_)
@@ -30,11 +33,36 @@ class GameLogic:
         self.Answer = a
         self.Hint = h
 
+    def set_current_painting_gamer_id(self, id_):
+        self.CurrentPaintingGamerId = id_
+
     def check_answer(self, a):
         return self.Answer == a
 
+    def check_gamer_is_answered(self, gamer_id):
+        return gamer_id in self.AnsweredGamerIds
+
     def get_hint(self):
         return self.Hint
+
+    def process_answer(self, answer, answer_gamer_id, gamer_group,
+                       all_gamer_answered_cb):
+        if self.check_gamer_is_answered(answer_gamer_id) and self.check_answer(answer):
+            ans_gamer = gamer_group.get_gamer_by_id(answer_gamer_id)
+            pat_gamer = gamer_group.get_gamer_by_id(self.CurrentPaintingGamerId)
+            logger.info('handlers.handle_game_chat',
+                        f'gamer {ans_gamer.UserName} has answered this puzzle')
+            # 将答对的玩家的id加入到已完成回答的列表中
+            self.add_answered_gamer_id(answer_gamer_id)
+            # 答题玩家和画图玩家都得分
+            ans_gamer.score(self.get_next_point())
+            pat_gamer.score(config.game.DrawPoint)
+            return True, len(self.AnsweredGamerIds)
+        else:
+            return False, len(self.AnsweredGamerIds)
+
+
+
 
 
 
