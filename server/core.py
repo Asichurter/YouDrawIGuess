@@ -13,7 +13,10 @@ from log import GlobalLogger as logger
 from server.gamer import Gamer, UnloggedGamer
 from server.handlers import get_handler
 from server.account import GamerAccount
-from vals.command import make_gamer_info_command, CMD_BEGIN_GAME, make_chat_command
+from server.game import GameLogic
+from server.message import ServerMessage
+from server.timer.timer_manager import TimerManager
+from vals.command import *
 
 
 class Server:
@@ -31,8 +34,10 @@ class Server:
         self.UnloggedGamers = []
         self.Gamers = []
         self.GamerLock = threading.Lock()
+        self.GameRoundPerGamer = 1      # 每一个玩家出题的循环次数
+        self.ServerMessage = ServerMessage()
 
-        # self.GamerCount = 0
+        self.TimerManager = TimerManager()
         self.UsrSocket = []
         self.UsrAddr = []
         self.UsrName = []
@@ -41,6 +46,7 @@ class Server:
         self.TimerId = {}
         self.TimerThread = {}
 
+        self.GameLogic = None
         self.Answer = None
         self.Hint = None
         self.PointPool = []
@@ -48,6 +54,7 @@ class Server:
 
         self.CmdQueue = Queue()
         self.GameBeginFlag = ThreadValue(True)
+        self.MessageLoopFlag = True
 
     def add_gamer(self, gamer):
         self.GamerLock.acquire()
@@ -90,11 +97,36 @@ class Server:
         self.AnsweredGamer.clear()
 
     def game_state(self):
-        while True:
-            self.send_all_cmd(**make_chat_command(id_=-1,
-                                                  name='服务器',
-                                                  content='游戏开始的测试信息'))
-            time.sleep(2)
+        logger.debug('server.gamer_state',
+                     'entering game state')
+        # 初始化游戏逻辑
+        self.GameLogic = GameLogic(len(self.Gamers))
+
+        for round_index in range(self.GameRoundPerGamer):
+            # 游戏循环次数等于玩家数量
+            for cur_gamer_index in range(len(self.Gamers)):
+                cur_gamer = self.Gamers[cur_gamer_index]
+
+                self.GameLogic.init_game_state()
+                self.send_all_cmd(**make_newround_command())
+                # 将当前出题者加入到已回答玩家列表中，防止其自己猜自己
+                self.GameLogic.add_answered_gamer_id(cur_gamer.Id)
+                # 发送开始画图和通告画图者的通知
+                paint_message = self.ServerMessage.make_paint_inform_message(cur_gamer.UserName)
+                self.send_all_cmd(**make_inform_command(paint_message))
+                # 当前画图者发出开始画图指令
+                cur_gamer.send_cmd(**make_begin_paint_command())
+
+                # 进入指令处理循环
+                while True:
+                    pass
+
+
+        # while True:
+        #     self.send_all_cmd(**make_chat_command(id_=-1,
+        #                                           name='服务器',
+        #                                           content='游戏开始的测试信息'))
+        #     time.sleep(2)
 
     def game_state_(self):
         print('entering game state')

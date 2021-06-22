@@ -33,7 +33,7 @@ def handle_gamer_login(server,
     gamer.send_cmd(**cmd)
 
     if passed:
-        from server.gamer import Gamer
+        from server.gamer import Gamer      # 逻辑内部import，防止循环import问题
         new_gamer = Gamer(gamer, gamer_id, username)
         server.add_gamer(new_gamer)
         server.send_gamer_info()

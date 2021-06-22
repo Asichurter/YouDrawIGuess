@@ -1,5 +1,4 @@
-
-
+from vals.command import make_game_timer_event_command, make_game_timeout_event_command
 from server.timer.base_timer import BaseTimer
 from com.talk import encode_msg
 
@@ -34,15 +33,16 @@ class GametimeCountTimer(TimeCountTimer):
     # 实际的时间戳处理函数
     # 将一条带有time事件的信息放入队列进行消费
     def process_count(self, time_count):
-        msg, _ = encode_msg(command='TimerEvent',
-                         second=str(time_count))
+        msg, _ = encode_msg(**make_game_timer_event_command(str(time_count)))
+        # msg, _ = encode_msg(command='TimerEvent',
+        #                  second=str(time_count))
         self.Queue.put(msg)
 
 
     # 超时事件处理函数
     # 将一条带有timeout事件的信息放入队列进行消费
     def timeout_event(self, tick, *args, **kwargs):
-        msg, _ = encode_msg('Timeout')
+        msg, _ = encode_msg(**make_game_timeout_event_command())
         self.Queue.put(msg)
 
 # import queue

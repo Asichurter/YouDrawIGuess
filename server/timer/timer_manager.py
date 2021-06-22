@@ -41,7 +41,7 @@ class TimerManager:
         time.sleep(0.5)
 
 
-    def add_gametime_count_timer(self, timer_name, msg_queue, time_interval, max_ticks):
+    def start_gametime_count_timer(self, timer_name, msg_queue, time_interval, max_ticks):
         timer_id = self._gen_rand_timer_id()
         timer = GametimeCountTimer(msg_queue, time_interval, max_ticks,
                                    down_count=True)
@@ -56,14 +56,14 @@ import queue, time
 if __name__ == '__main__':
     mng = TimerManager()
     q = queue.Queue()
-    mng.add_gametime_count_timer('test', q, 1, 10)
-    mng.add_gametime_count_timer('test', q, 1, 10)
+    mng.start_gametime_count_timer('test', q, 1, 10)
+    mng.start_gametime_count_timer('test', q, 1, 10)
 
-    for i in range(5):
+    for i in range(8):
         print(q.get())
 
     mng.stop_timers_by_name('test')
-    time.sleep(2)
+    time.sleep(6)
 
     print(mng.Timers)
     print(mng.TimerNameToId)
