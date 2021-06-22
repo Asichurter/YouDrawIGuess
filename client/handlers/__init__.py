@@ -21,7 +21,7 @@ __handler_switch = {
         CMD_PAINT_POINT: handle_paint_point,
         CMD_CLICK_POINT: handle_click_point,
         CMD_NEWROUND: handle_new_round,
-        CMD_TIMER_EVENT: handle_timer_event,
+        CMD_GAME_TIMER_EVENT: handle_game_timer_event,
         CMD_END_GAME: handle_end_game,
         CMD_SETTING_CHANGED: handle_setting_changed
     }

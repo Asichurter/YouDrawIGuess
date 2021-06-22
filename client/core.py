@@ -34,11 +34,10 @@ class Client:
         try:
             self.Signals = ClientSignal()
             self.init_slots()
-
             self.Engine = ClientEngine(self.Signals, socket_obj)
             self.Engine.set_gamer_name_id(id_, usrname)
-
-            print('in activate...')
+            logger.info('client.activate',
+                        'activating...')
 
             cmd, gamers = self.Engine.recv_cmd()
             while cmd != 'GamerInfo':
@@ -50,9 +49,8 @@ class Client:
 
             # 启动一个额外的线程用于background任务
             self.GameThread.start()
-
             self.Engine.show()
-            print('showing...')
+
         except Exception as e:
             logger.critical('client.core.activate',
                             'Err when activate: {}'.format(e))
@@ -63,7 +61,7 @@ class Client:
         while True:
             try:
                 cmd, vals = self.Engine.recv_cmd()
-                logger.info('client.core.wait_for_ready',
+                logger.debug('client.core.wait_for_ready',
                             'recv cmd: {}, {}'.format(cmd, vals))
 
                 handler = get_handler(C_WAIT_FOR_READY, cmd)

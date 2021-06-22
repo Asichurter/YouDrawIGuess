@@ -12,7 +12,7 @@ class GamerAccount:
         except Exception as e:
             logger.critical('server.account',
                             'fail to load gamer account: %s' % str(e))
-            self.Accounts = None
+            self.Accounts = {}
 
     def check_gamer_login(self, username, passwd):
         if username not in self.Accounts:

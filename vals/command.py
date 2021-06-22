@@ -13,7 +13,8 @@ CMD_BEGIN_PAINT = 'BeginPaint'
 CMD_STOP_PAINT = 'StopPaint'
 CMD_PAINT_POINT = 'PaintPoint'
 CMD_CLICK_POINT = 'ClickPoint'
-CMD_TIMER_EVENT = 'TimerEvent'
+CMD_GAME_TIMER_EVENT = 'GameTimerEvent'
+CMD_GAME_TIMEOUT_EVENT = 'GameTimeoutEvent'
 CMD_END_GAME = 'EndGame'
 CMD_SETTING_CHANGED = 'SettingChanged'
 CMD_NEWROUND = 'NewRound'
@@ -72,3 +73,40 @@ def make_gamer_info_command(gamer_info):
 def parse_gamer_info_command(cmd_body):
     gamers = extract_kwargs(cmd_body, ('gamers',), 'command.parse_gamer_info_command')
     return gamers
+
+def make_newround_command():
+    return {
+        'command': CMD_NEWROUND
+    }
+
+def make_inform_command(inform_msg):
+    return {
+        'command': CMD_INFORM,
+        'content': inform_msg
+    }
+
+def parse_inform_command(cmd_body):
+    inform_msg = extract_kwargs(cmd_body, ('content',), 'command.parse_inform_command')
+    return inform_msg
+
+def make_begin_paint_command():
+    return {
+        'command': CMD_BEGIN_PAINT
+    }
+
+def make_game_timer_event_command(sec):
+    return {
+        'command': CMD_GAME_TIMER_EVENT,
+        'second': sec
+    }
+
+def parse_game_timer_event_command(cmd_body):
+    sec = extract_kwargs(cmd_body, ('second',), 'command.prase_game_timer_event_command')
+    return sec
+
+def make_game_timeout_event_command():
+    return {
+        'command': CMD_GAME_TIMEOUT_EVENT
+    }
+
+

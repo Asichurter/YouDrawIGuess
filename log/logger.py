@@ -10,9 +10,9 @@ class Logger(object):
     # 在这里定义StreamHandler，可以实现单例， 所有的logger()共用一个StreamHandler
     ch = logging.StreamHandler()
 
-    def __init__(self):
+    def __init__(self, level=5):
         self.Logger = logging.getLogger()
-        self.Logger.setLevel(5)
+        self.Logger.setLevel(level)
         self.Enabled = True
         # if not self.logger.handlers:
         #     # 如果self.logger没有handler， 就执行以下代码添加handler
@@ -27,7 +27,6 @@ class Logger(object):
         #     fh = logging.FileHandler(self.log_path + '/runlog' + time.strftime("%Y%m%d", time.localtime()) + '.log',
         #                              encoding='utf-8')
         #     fh.setLevel(logging.INFO)
-        #
         #     # 定义handler的输出格式
         #     formatter = logging.Formatter('[%(asctime)s] - [%(levelname)s] - %(message)s')
         #     fh.setFormatter(formatter)
@@ -76,7 +75,7 @@ class Logger(object):
 
 
 if __name__ == "__main__":
-    logger = Logger()
+    logger = Logger(2)
     logger.info(1, "12345")
     logger.debug(1, "12345")
     logger.warning(1, "12345")

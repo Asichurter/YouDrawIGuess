@@ -16,7 +16,8 @@ def handle_inform(engine: ClientEngine,
                   signals: ClientSignal,
                   **kwargs):
     try:
-        inform = extract_kwargs(kwargs, ('Content', 'content'), 'client.handlers.handle_inform')
+        # inform = extract_kwargs(kwargs, ('Content', 'content'), 'client.handlers.handle_inform')
+        inform = parse_inform_command(kwargs)
         if inform is None:
             return
 
@@ -99,11 +100,12 @@ def handle_click_point(engine: ClientEngine,
     engine.Panel.PaintPanel.extern_click(x, y)
 
 
-# 处理计时器事件，更新时间显示
-def handle_timer_event(engine: ClientEngine,
-                       signals: ClientSignal,
-                       **kwargs):
-    digit = extract_kwargs(kwargs, ('Second', 'second'), 'client.handlers.handle_timer_event')
+# 处理游戏倒计时计时器事件，更新时间显示
+def handle_game_timer_event(engine: ClientEngine,
+                            signals: ClientSignal,
+                            **kwargs):
+    # digit = extract_kwargs(kwargs, ('Second', 'second'), 'client.handlers.handle_timer_event')
+    digit = parse_game_timer_event_command(kwargs)
     if digit is None:
         return
 
