@@ -1,11 +1,11 @@
 from log import GlobalLogger as logger
-from server.core import Server
+# from server.core import Server
 from utils.handler_utils import extract_kwargs
 from vals.command import parse_chat_command, make_chat_command
 
 
 # 常规聊天，不包含猜谜逻辑
-def handle_common_chat(server: Server,
+def handle_common_chat(server,
                       **kwargs):
     name, ID, content = parse_chat_command(kwargs)
     if name is None or content is None:
@@ -14,6 +14,11 @@ def handle_common_chat(server: Server,
         return
 
     server.send_all_cmd(**make_chat_command(ID, name, content))
+
+# def get_simple_forward_handler(cmd, id_filter):
+#     def handle_simple_forward(server, **kwargs):
+
+
 
 
 # # 更新所有玩家的信息
@@ -25,3 +30,4 @@ def handle_common_chat(server: Server,
 #         return
 #
 #     engine.update_gamers(gamers)
+

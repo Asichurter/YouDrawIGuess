@@ -10,7 +10,7 @@ from com.talk import recv_cmd, send_cmd, decode_msg, encode_msg
 from utils.thread_utils import ThreadValue
 from log import GlobalLogger as logger
 
-from server.gamer import Gamer, UnloggedGamer
+from server.gamer import Gamer, UnloggedGamer, GamerGroup
 from server.handlers import get_handler
 from server.account import GamerAccount
 from server.game import GameLogic
@@ -32,12 +32,13 @@ class Server:
         self.WelcomeSocket.bind(('', config.connect.ServerPort))
 
         self.UnloggedGamers = []
-        self.Gamers = []
-        self.GamerLock = threading.Lock()
+        self.Gamers = GamerGroup()
         self.GameRoundPerGamer = 1      # 每一个玩家出题的循环次数
         self.ServerMessage = ServerMessage()
 
         self.TimerManager = TimerManager()
+
+
         self.UsrSocket = []
         self.UsrAddr = []
         self.UsrName = []
@@ -56,13 +57,12 @@ class Server:
         self.GameBeginFlag = ThreadValue(True)
         self.MessageLoopFlag = True
 
-    def add_gamer(self, gamer):
-        self.GamerLock.acquire()
-        self.Gamers.append(gamer)
-        self.GamerLock.release()
-
     def recv_cmd(self, i, decode=True):
         return recv_cmd(self.UsrSocket[i], decode)
+
+    def send_cmd_by_id(self, id_, command, **kwargs):
+        gamer = self.Gamers.get_gamer_by_id(id_)
+        gamer.send_cmd(command=command, **kwargs)
 
     def send_cmd(self, i, command, **kwargs):
         # logger.debug('server.send_cmd',
@@ -107,7 +107,7 @@ class Server:
             for cur_gamer_index in range(len(self.Gamers)):
                 cur_gamer = self.Gamers[cur_gamer_index]
 
-                self.GameLogic.init_game_state()
+                self.GameLogic.init_game_state(cur_gamer.Id)
                 self.send_all_cmd(**make_newround_command())
                 # 将当前出题者加入到已回答玩家列表中，防止其自己猜自己
                 self.GameLogic.add_answered_gamer_id(cur_gamer.Id)
@@ -118,8 +118,10 @@ class Server:
                 cur_gamer.send_cmd(**make_begin_paint_command())
 
                 # 进入指令处理循环
-                while True:
-                    pass
+                self.MessageLoopFlag = True
+                while self.MessageLoopFlag:
+                    msg = self.CmdQueue.get()  # 阻塞队列，处理接受到的命令
+                    cmd, cmd_body = decode_msg(msg)
 
 
         # while True:
@@ -157,22 +159,22 @@ class Server:
             print('thread starting from parent thread!')
             while True:
                 msg = self.CmdQueue.get()  # 阻塞队列，处理接受到的命令
-                cmd, vals = decode_msg(msg)
+                cmd, cmd_body = decode_msg(msg)
                 if cmd != '':
                     logger.info('server.game',
-                                'cmd: {}, vals: {}'.format(cmd, vals))
+                                'cmd: {}, vals: {}'.format(cmd, cmd_body))
 
                 if cmd == 'BeginPaint':
-                    self.Answer = vals['answer']
-                    self.Hint = vals['hint']
+                    self.Answer = cmd_body['answer']
+                    self.Hint = cmd_body['hint']
                     # 启动倒计时定时器
                     self. \
                         startTimer(timerId=0, downCount=int(config.game.RoundTime), interval=1)
                     print('timer starting!')
 
                 elif cmd == 'Chat':
-                    usr_id = int(vals['id'])
-                    content = vals['content']
+                    usr_id = int(cmd_body['id'])
+                    content = cmd_body['content']
 
                     if usr_id not in self.AnsweredGamer and self.checkAnswer(content):
                         # 一旦玩家的答案正确
@@ -196,7 +198,7 @@ class Server:
 
                     # 只有不是正确答案的聊天才会被公布
                     else:
-                        self.send_all_cmd(command='Chat', **vals)
+                        self.send_all_cmd(command='Chat', **cmd_body)
 
                 elif cmd == 'Timeout':
                     # for i in range(len(self.UsrSocket)):
@@ -210,16 +212,16 @@ class Server:
                         cmd == 'ClickPoint':
                     for i_, s_ in enumerate(self.UsrSocket):
                         if i_ != cur_gamer_index:
-                            self.send_cmd(i_, command=cmd, **vals)
+                            self.send_cmd(i_, command=cmd, **cmd_body)
 
                 elif cmd == 'TimerEvent':
                     for i_, s_ in enumerate(self.UsrSocket):
-                        self.send_cmd(i_, command=cmd, **vals)
+                        self.send_cmd(i_, command=cmd, **cmd_body)
 
                 elif cmd == 'SettingChanged':
                     for i_, s_ in enumerate(self.UsrSocket):
                         if i_ != cur_gamer_index:
-                            self.send_cmd(i_, command=cmd, **vals)
+                            self.send_cmd(i_, command=cmd, **cmd_body)
 
         self.send_all_cmd(command='EndGame')
 
@@ -374,9 +376,9 @@ class Server:
                 pass
         return None
 
-    def send_gamer_info(self):
-        gamer_info = self.get_gamer_info()
-        self.send_all_cmd(**make_gamer_info_command(gamer_info))
+    # def send_gamer_info(self):
+    #     gamer_info = self.get_gamer_info()
+    #     self.send_all_cmd(**make_gamer_info_command(gamer_info))
 
     def get_gamer_info(self):
         gamers = []

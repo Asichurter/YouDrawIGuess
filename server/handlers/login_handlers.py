@@ -1,7 +1,7 @@
 # from server.core import Server
 from vals.command import CMD_BEGIN_GAME
 from utils.handler_utils import extract_kwargs
-from  vals.command import parse_login_command, make_login_result_command
+from vals.command import parse_login_command, make_login_result_command, make_gamer_info_command
 from log import GlobalLogger as logger
 
 def handle_none(server,
@@ -35,9 +35,12 @@ def handle_gamer_login(server,
     if passed:
         from server.gamer import Gamer      # 逻辑内部import，防止循环import问题
         new_gamer = Gamer(gamer, gamer_id, username)
-        server.add_gamer(new_gamer)
-        server.send_gamer_info()
-        gamer.LoginFlag.write_val(True)      # 登录成功后将flag标志为True告知外部可以退出登录循环
+        server.Gamers.add_gamer(new_gamer, gamer_id)
+        # 发送所有玩家信息，更新玩家情况
+        gamers_info = server.Gamers.pack_all_gamers_info()
+        server.send_all_cmd(**make_gamer_info_command(gamers_info))
+        # 登录成功后将flag标志为True告知外部可以退出登录循环
+        gamer.LoginFlag.write_val(True)
 
         logger.info('server.login', 'gamer {}:{} login'.format(gamer_id, username))
 

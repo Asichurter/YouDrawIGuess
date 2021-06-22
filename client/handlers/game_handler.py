@@ -57,7 +57,8 @@ def handle_begin_paint(engine: ClientEngine,
         logger.info('client.handlers.handle_begin_paint',
                     '谜题: {}, 提示: {}'.format(answer, hint))
 
-        engine.send_cmd(command=CMD_BEGIN_PAINT, answer=answer, hint=hint)
+        # engine.send_cmd(command=CMD_BEGIN_PAINT, answer=answer, hint=hint)
+        engine.send_cmd(**make_make_puzzle_command(answer, hint))
         # 只有要画图的人才能看到设置面板
         engine.Panel.PaintPanel.set_setting_visible(True)
 

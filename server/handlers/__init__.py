@@ -1,4 +1,6 @@
 from .login_handlers import *
+from .common_handlers import *
+from .game_handlers import *
 
 from log import GlobalLogger as logger
 from vals.command import *
@@ -9,6 +11,11 @@ __handler_switch = {
         CMD_BEGIN_GAME: handle_game_begin,
         CMD_LOGIN: handle_gamer_login,
         CMD_EXIT_LOGIN: handle_gamer_exit_login,
+    },
+    S_GAME: {
+        CMD_CHAT: handle_game_chat,
+        CMD_MAKE_PUZZLE: handle_make_puzzle,
+        CMD_BREAK_MESSAGE_LOOP: handle_none,    # 消息循环刷新判断用信息，不做任何操作
     }
 }
 
