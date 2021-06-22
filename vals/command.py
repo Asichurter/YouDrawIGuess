@@ -10,7 +10,9 @@ CMD_BEGIN_GAME = 'BeginGame'
 
 CMD_INFORM = 'Inform'
 CMD_BEGIN_PAINT = 'BeginPaint'
+CMD_MAKE_PUZZLE = 'MakePuzzle'
 CMD_STOP_PAINT = 'StopPaint'
+CMD_BREAK_MESSAGE_LOOP = 'BreakMessageLoop'
 CMD_PAINT_POINT = 'PaintPoint'
 CMD_CLICK_POINT = 'ClickPoint'
 CMD_GAME_TIMER_EVENT = 'GameTimerEvent'
@@ -89,11 +91,6 @@ def parse_inform_command(cmd_body):
     inform_msg = extract_kwargs(cmd_body, ('content',), 'command.parse_inform_command')
     return inform_msg
 
-def make_begin_paint_command():
-    return {
-        'command': CMD_BEGIN_PAINT
-    }
-
 def make_game_timer_event_command(sec):
     return {
         'command': CMD_GAME_TIMER_EVENT,
@@ -108,5 +105,33 @@ def make_game_timeout_event_command():
     return {
         'command': CMD_GAME_TIMEOUT_EVENT
     }
+
+def make_begin_paint_command():
+    return {
+        'command': CMD_BEGIN_PAINT
+    }
+
+def make_make_puzzle_command(answer, hint):
+    return {
+        'command': CMD_MAKE_PUZZLE,
+        'answer': answer,
+        'hint': hint
+    }
+
+def parse_make_puzzle_command(cmd_body):
+    answer = extract_kwargs(cmd_body, ('answer',), 'command.parse_make_puzzle_command')
+    hint = extract_kwargs(cmd_body, ('hint',), 'command.parse_make_puzzle_command')
+    return answer, hint
+
+def make_stop_paint_command():
+    return {
+        'command': CMD_STOP_PAINT
+    }
+
+def make_break_message_loop_command():
+    return {
+        'command': CMD_BREAK_MESSAGE_LOOP
+    }
+
 
 
