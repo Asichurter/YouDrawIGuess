@@ -30,8 +30,8 @@ def recv_cmd(socket_obj, decode=True):
         return raw_msg
 
 
-def send_cmd(socket_obj, command, **args):
-    body_msg, header_msg = encode_msg(command=command, **args)
+def send_cmd(socket_obj, command, **kwargs):
+    body_msg, header_msg = encode_msg(command=command, **kwargs)
     # print('[send_cmd] header: {}, body: {}'.format(header_msg, body_msg))
     # 发送指令时，先发送头部，再发送主体
     socket_obj.send(header_msg)

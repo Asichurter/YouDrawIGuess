@@ -6,6 +6,7 @@ from PyQt5 import QtCore as core
 from com.talk import send_cmd, recv_cmd
 from client.signal import ClientSignal
 from client.panel import GamePanel
+from vals.command import *
 import config
 
 from log import GlobalLogger as logger
@@ -42,7 +43,7 @@ class ClientEngine:
         self.Signals.bind_eraser_change_signal(self.get_setting_change_handler('Eraser'))
         self.Signals.bind_clear_signal(self.get_setting_change_handler('Clear'))
 
-        self.Signals.bind_game_begin_signal(self.get_send_cmd_handler('BeginGame'))
+        self.Signals.bind_game_begin_signal(self.get_send_cmd_handler(**make_begin_game_command()))
 
 
     def set_gamer_name_id(self, gid=0, gname=''):
@@ -66,7 +67,8 @@ class ClientEngine:
     def signal_click_point(self, point):
         x = point.x()
         y = point.y()
-        self.send_cmd(command='ClickPoint', X=x, Y=y)
+        # self.send_cmd(command='ClickPoint', X=x, Y=y)
+        self.send_cmd(**make_click_point_command(x, y))
 
 
     # 画板上鼠标松开的槽函数
@@ -77,9 +79,9 @@ class ClientEngine:
 
 
     # 返回获得发送指令的处理函数
-    def get_send_cmd_handler(self, cmd, **kwargs):
+    def get_send_cmd_handler(self, command, **kwargs):
         def sender():
-            self.send_cmd(command=cmd, **kwargs)
+            self.send_cmd(command=command, **kwargs)
         return sender
 
 
@@ -88,15 +90,20 @@ class ClientEngine:
     def get_setting_change_handler(self, name):
         def sender(val=None):
             d = {name:val}
-            self.send_cmd(command='SettingChanged', **d)
+            # self.send_cmd(command='SettingChanged', **d)
+            self.send_cmd(**make_setting_changed_command(d))
         return sender
 
 
     def signal_send_chat(self, msg):
-        self.send_cmd(command='Chat',
-                      id=self.GamerId,
-                      name=self.GamerUsrName,
-                      content=msg)
+        chat_cmd = make_chat_command(id_=self.GamerId,
+                                     name=self.GamerUsrName,
+                                     content=msg)
+        self.send_cmd(**chat_cmd)
+        # self.send_cmd(command='Chat',
+        #               id=self.GamerId,
+        #               name=self.GamerUsrName,
+        #               content=msg)
 
 
     # 立刻发送所有点，清空buffer
@@ -106,7 +113,8 @@ class ClientEngine:
         for x, y in self.PointBuffer:
             points.append((x,y))
             # points[str(i)] = str(x_) + ' ' + str(y_)
-        send_cmd(self.Socket, 'PaintPoint', points=points)
+        # send_cmd(self.Socket, 'PaintPoint', points=points)
+        send_cmd(self.Socket, **make_paint_point_command(points))
         self.PointBuffer.clear()
         self.BufferLock.release()
 

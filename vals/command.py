@@ -21,6 +21,11 @@ CMD_END_GAME = 'EndGame'
 CMD_SETTING_CHANGED = 'SettingChanged'
 CMD_NEWROUND = 'NewRound'
 
+def make_begin_game_command():
+    return {
+        'command': CMD_BEGIN_GAME
+    }
+
 def make_login_command(username, password):
     return {
         'command': CMD_LOGIN,
@@ -138,5 +143,35 @@ def make_end_game_command():
         'command': CMD_END_GAME
     }
 
+def make_click_point_command(x, y):
+    return {
+        'command': CMD_CLICK_POINT,
+        'X': x,
+        'Y': y
+    }
 
+def parse_click_point_command(cmd_body):
+    x = extract_kwargs(cmd_body, ('X',), 'command.parse_click_point_command')
+    y = extract_kwargs(cmd_body, ('Y',), 'command.parse_click_point_command')
+    return x, y
+
+def make_paint_point_command(points):
+    return {
+        'command': CMD_PAINT_POINT,
+        'points': points
+    }
+
+def parse_paint_point_command(cmd_body):
+    points = extract_kwargs(cmd_body, ('points',), 'command.parse_paint_point_command')
+    return points
+
+def make_setting_changed_command(kvs):
+    return {
+        'command': CMD_SETTING_CHANGED,
+        'settings': kvs
+    }
+
+def parse_setting_changed_command(cmd_body):
+    settings = extract_kwargs(cmd_body, ('settings',), 'command.parse_setting_changed_command')
+    return settings
 

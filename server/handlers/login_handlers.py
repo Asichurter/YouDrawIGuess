@@ -1,7 +1,7 @@
 # from server.core import Server
 from vals.command import CMD_BEGIN_GAME
 from utils.handler_utils import extract_kwargs
-from vals.command import parse_login_command, make_login_result_command, make_gamer_info_command
+from vals.command import *
 from log import GlobalLogger as logger
 
 def handle_none(server,
@@ -15,7 +15,7 @@ def handle_game_begin(server,
     # 设置游戏开始flag，停止接受更多玩家连接
     server.GameBeginFlag.write_val(False)
     # 向所有玩家发送游戏开始指令
-    server.send_all_cmd_unlogged(CMD_BEGIN_GAME)
+    server.send_all_cmd_unlogged(**make_begin_game_command())
 
 def handle_gamer_login(server,
                        **kwargs):

@@ -81,7 +81,8 @@ def handle_paint_point(engine: ClientEngine,
                        signals: ClientSignal,
                        **kwargs):
 
-    points = extract_kwargs(kwargs, ('points', 'Points'), 'client.handlers.handle_paint_point')
+    # points = extract_kwargs(kwargs, ('points', 'Points'), 'client.handlers.handle_paint_point')
+    points = parse_paint_point_command(kwargs)
     if points is None:
         return
 
@@ -93,8 +94,10 @@ def handle_click_point(engine: ClientEngine,
                        signals: ClientSignal,
                        **kwargs):
 
-    x = extract_kwargs(kwargs, ('X', 'x'), 'client.handlers.handle_click_point')
-    y = extract_kwargs(kwargs, ('Y', 'y'), 'client.handlers.handle_click_point')
+    # x = extract_kwargs(kwargs, ('X', 'x'), 'client.handlers.handle_click_point')
+    # y = extract_kwargs(kwargs, ('Y', 'y'), 'client.handlers.handle_click_point')
+    x, y = parse_click_point_command(kwargs)
+
     if x is None or y is None:
         return
 
@@ -134,7 +137,8 @@ def handle_setting_changed(engine: ClientEngine,
                            signals: ClientSignal,
                            **kwargs):
 
-    for k, v in kwargs.items():
+    changed_settings = parse_setting_changed_command(kwargs)
+    for k, v in changed_settings.items():
         SettingChangeSwitch.get(k, EmptySettingChangedHandler)(engine, v)
 
 
