@@ -100,6 +100,7 @@ class Client:
     def exit(self):
         self.Engine.WelcomeSocket.close()
         self.GameThread.exit(0)
+        exit(0)
 
 
 class GameThread(core.QThread):

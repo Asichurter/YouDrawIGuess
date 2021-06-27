@@ -28,5 +28,6 @@ def handle_game_timeout_event(server, **kwargs):
 
     # 设置消息循环退出flag，并放入刷新消息
     server.MessageLoopFlag = False
-    server.CmdQueue.put(encode_msg(**make_break_message_loop_command()))
+    encoded_msg_body, _ = encode_msg(**make_break_message_loop_command())
+    server.CmdQueue.put(encoded_msg_body)
 

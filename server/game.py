@@ -38,8 +38,8 @@ class GameLogic:
     def set_current_painting_gamer_id(self, id_):
         self.CurrentPaintingGamerId = id_
 
-    def set_answer_invalid(self):
-        self.IsAnswerValid = False
+    def set_answer_valid_state(self, is_valid):
+        self.IsAnswerValid = is_valid
 
     def check_answer(self, a):
         return self.Answer == a
@@ -51,11 +51,13 @@ class GameLogic:
         return self.Hint
 
     def process_answer(self, answer, answer_gamer_id, gamer_group):
+        logger.debug('GameLogic.process_answer',
+                     f'state: {self.IsAnswerValid}, {answer} : {self.Answer}')
         # 问题处于无效状态时不做判断
         if not self.IsAnswerValid:
             return False, len(self.AnsweredGamerIds)
 
-        if self.check_gamer_is_answered(answer_gamer_id) and self.check_answer(answer):
+        if not self.check_gamer_is_answered(answer_gamer_id) and self.check_answer(answer):
             ans_gamer = gamer_group.get_gamer_by_id(answer_gamer_id)
             pat_gamer = gamer_group.get_gamer_by_id(self.CurrentPaintingGamerId)
             logger.info('handlers.handle_game_chat',

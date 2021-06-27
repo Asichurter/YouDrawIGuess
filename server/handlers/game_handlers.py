@@ -36,6 +36,8 @@ def handle_game_chat(server, **kwargs):
         server.send_all_cmd(**make_chat_command(id_=-1,
                                                 name='服务器',
                                                 content=f'{name}已经猜对了答案'))
+        # 刷新分数
+        server.send_all_cmd(**make_gamer_info_command(server.Gamers.pack_all_gamers_info()))
     # 否则将chat视为一般的聊天，广播给所有玩家
     else:
         server.send_all_cmd(**make_chat_command(id_=id_,
@@ -49,7 +51,7 @@ def handle_game_chat(server, **kwargs):
 
         # 1. 终止游戏倒计时
         server.TimerManager.stop_timers_by_name(GAME_DOWNCOUNT_TIMER)
-        cur_gamer = server.Gamers.get_gamer_by_id(server.CurrentPaintGamerId)
+        cur_gamer = server.Gamers.get_gamer_by_id(server.GameLogic.CurrentPaintingGamerId)
         # 2. 向当前画图玩家发出停止画图的指令，向所有玩家发出当前游戏round结束的通告
         cur_gamer.send_cmd(**make_stop_paint_command())
         server.send_all_cmd(
@@ -60,7 +62,7 @@ def handle_game_chat(server, **kwargs):
         server.MessageLoopFlag = False
         server.CmdQueue.put(encode_msg(**make_break_message_loop_command()))
         # 4. 将答案置为无效，防止其他玩家在谜底揭晓处于无效状态时进行答题
-        server.GameLogic.set_answer_invalid()
+        server.GameLogic.set_answer_valid_state(False)
 
 
 
