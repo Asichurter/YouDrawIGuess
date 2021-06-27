@@ -5,17 +5,19 @@ import time
 from queue import Queue
 
 import config
-from vals.state import *
+
 from com.talk import recv_cmd, send_cmd, decode_msg, encode_msg
 from utils.thread_utils import ThreadValue
 from log import GlobalLogger as logger
 
-from server.gamer import Gamer, UnloggedGamer, GamerGroup
+from server.gamer import UnloggedGamer, GamerGroup
 from server.handlers import get_handler
 from server.account import GamerAccount
 from server.game import GameLogic
 from server.message import ServerMessage
 from server.timer.timer_manager import TimerManager
+from vals.state import *
+from vals.error import ServerHandlingError, DecodeError
 from vals.command import *
 
 
@@ -121,14 +123,23 @@ class Server:
                 self.MessageLoopFlag = True
                 while self.MessageLoopFlag:
                     msg = self.CmdQueue.get()  # 阻塞队列，处理接受到的命令
-                    cmd, cmd_body = decode_msg(msg)
+                    try:
+                        cmd, cmd_body = decode_msg(msg, raise_exception=True)
+                        handler = get_handler(S_GAME_STATE, cmd)
+                        handler(self,
+                                cur_gamer=cur_gamer,
+                                raw_message=msg,
+                                **cmd_body)
+                    except DecodeError as de:
+                        logger.error('server.game_state',
+                                     f'decoding error in game message loop: {de}')
+                    except Exception as e:
+                        she = ServerHandlingError(cmd, cmd_body, e)
+                        logger.error('server.game_state',
+                                     f'unknown error when handling in game state: {she}')
 
-
-        # while True:
-        #     self.send_all_cmd(**make_chat_command(id_=-1,
-        #                                           name='服务器',
-        #                                           content='游戏开始的测试信息'))
-        #     time.sleep(2)
+        # 关闭游戏
+        self.close()
 
     def game_state_(self):
         print('entering game state')
@@ -306,7 +317,7 @@ class Server:
                 cmd, body = self.UnloggedGamers[host_index].recv_cmd()
                 logger.debug('handle_host_cmd',
                              f'cmd: {cmd}, body:{body}')
-                handler = get_handler(S_LOGIN, cmd, supress_log=True)
+                handler = get_handler(S_LOGIN_STATE, cmd, supress_log=True)
                 handler(self, gamer=self.UnloggedGamers[host_index], **body)
 
                 # 该线程如果接收到了主机有关游戏开始的命令后就退出
@@ -398,9 +409,9 @@ class Server:
         self.UsrPoint[uid] += self.PointPool.pop(0)
 
     def close(self):
-        self.send_all_cmd(command='EndGame')
-        for s_ in self.UsrSocket:
-            s_.close()
+        self.send_all_cmd(**make_end_game_command())
+        for gamer in self.Gamers:
+            gamer.close()
         self.WelcomeSocket.close()
 
 
