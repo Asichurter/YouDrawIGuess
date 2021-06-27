@@ -133,5 +133,10 @@ def make_break_message_loop_command():
         'command': CMD_BREAK_MESSAGE_LOOP
     }
 
+def make_end_game_command():
+    return {
+        'command': CMD_END_GAME
+    }
+
 
 

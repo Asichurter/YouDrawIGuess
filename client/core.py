@@ -64,7 +64,7 @@ class Client:
                 logger.debug('client.core.wait_for_ready',
                             'recv cmd: {}, {}'.format(cmd, vals))
 
-                handler = get_handler(C_WAIT_FOR_READY, cmd)
+                handler = get_handler(C_WAIT_FOR_READY_STATE, cmd)
                 ret = handler(self.Engine, self.Signals, **vals)
                 if ret is not None and check_game_is_begin(ret):
                     break
@@ -83,7 +83,7 @@ class Client:
                 logger.info('client.core.game',
                             f'cmd: {cmd}, vals: {vals}')
 
-                handler = get_handler(C_GAME, cmd)
+                handler = get_handler(C_GAME_STATE, cmd)
                 ret = handler(self.Engine, self.Signals, **vals)
                 if ret is not None and check_game_is_end(ret):
                     break

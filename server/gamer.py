@@ -31,8 +31,11 @@ class UnloggedGamer:
         self.Socket.settimeout(None)    # 将Socket超时设置为无穷
         while not self.LoginFlag.get_val():
             cmd, body = self.recv_cmd()
-            handler = get_handler(S_LOGIN, cmd)
+            handler = get_handler(S_LOGIN_STATE, cmd)
             handler(server, gamer=self, **body)
+
+    def close(self):
+        self.Socket.close()
 
 class Gamer(UnloggedGamer):
     def __init__(self, unlogged_gamer: UnloggedGamer,

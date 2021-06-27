@@ -7,12 +7,12 @@ from vals.command import *
 from vals.state import *
 
 __handler_switch = {
-    C_WAIT_FOR_READY: {
+    C_WAIT_FOR_READY_STATE: {
         CMD_CHAT: handle_common_chat,
         CMD_GAMER_INFO: handle_gamer_info,
         CMD_BEGIN_GAME: handle_begin_game
     },
-    C_GAME: {
+    C_GAME_STATE: {
         CMD_CHAT: handle_common_chat,
         CMD_GAMER_INFO: handle_gamer_info,
         CMD_INFORM: handle_inform,

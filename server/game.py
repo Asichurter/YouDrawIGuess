@@ -8,6 +8,7 @@ class GameLogic:
         self.PointIndex = 0
         self.Answer = ''
         self.Hint = ''
+        self.IsAnswerValid = True
         self.AnsweredGamerIds = []
         self.CurrentPaintingGamerId = None      # 当前画图的玩家的ID
         self.reset_point_pool()
@@ -32,9 +33,13 @@ class GameLogic:
     def set_answer_hint(self, a, h):
         self.Answer = a
         self.Hint = h
+        self.IsAnswerValid = True
 
     def set_current_painting_gamer_id(self, id_):
         self.CurrentPaintingGamerId = id_
+
+    def set_answer_invalid(self):
+        self.IsAnswerValid = False
 
     def check_answer(self, a):
         return self.Answer == a
@@ -47,6 +52,10 @@ class GameLogic:
 
     def process_answer(self, answer, answer_gamer_id, gamer_group,
                        all_gamer_answered_cb):
+        # 问题处于无效状态时不做判断
+        if not self.IsAnswerValid:
+            return False, len(self.AnsweredGamerIds)
+
         if self.check_gamer_is_answered(answer_gamer_id) and self.check_answer(answer):
             ans_gamer = gamer_group.get_gamer_by_id(answer_gamer_id)
             pat_gamer = gamer_group.get_gamer_by_id(self.CurrentPaintingGamerId)

@@ -6,6 +6,7 @@ HeaderDummy = b'{"len": "0000"}'
 HeaderLength = len(HeaderDummy)
 
 from log import GlobalLogger as logger
+from vals.error import DecodeError
 
 
 def _make_len_header(body_len, digit_num=4):
@@ -35,16 +36,21 @@ def decode_length(length_header):
 
     return int(length_header.get('len', 0))
 
-def decode_msg(msg_body) -> (str, dict):
+def decode_msg(raw_msg_body, raise_exception=False) -> (str, dict):
     try:
-        msg_body = json.loads(msg_body)
+        msg_body = json.loads(raw_msg_body)
         command = msg_body.pop('command')
         return command, msg_body
     except json.JSONDecodeError as e:
+        if raise_exception:
+            raise DecodeError(raw_msg_body, str(e))
         logger.error('protocol.decode_msg',
                      'Fail to decode msg body: {}'.format(e))
+
         return 'unknown', {}
     except Exception as ue:
+        if raise_exception:
+            raise DecodeError(raw_msg_body, str(ue))
         logger.error('protocol.decode_msg',
                      'unknown err: {}, raw_msg: {}'.format(ue, msg_body))
         return 'unknown', {}
