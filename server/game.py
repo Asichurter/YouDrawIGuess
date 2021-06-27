@@ -50,8 +50,7 @@ class GameLogic:
     def get_hint(self):
         return self.Hint
 
-    def process_answer(self, answer, answer_gamer_id, gamer_group,
-                       all_gamer_answered_cb):
+    def process_answer(self, answer, answer_gamer_id, gamer_group):
         # 问题处于无效状态时不做判断
         if not self.IsAnswerValid:
             return False, len(self.AnsweredGamerIds)
