@@ -76,7 +76,7 @@ class Client:
         self.game()
 
     def game(self):
-        while True:
+        while not self.Engine.GameEndFlag:
             try:
                 cmd, vals = self.Engine.recv_cmd()
 
@@ -84,9 +84,7 @@ class Client:
                             f'cmd: {cmd}, vals: {vals}')
 
                 handler = get_handler(C_GAME_STATE, cmd)
-                ret = handler(self.Engine, self.Signals, **vals)
-                if ret is not None and check_game_is_end(ret):
-                    break
+                handler(self.Engine, self.Signals, **vals)
 
                 logger.info('client.core.game',
                             f'cmd: {cmd} executed')

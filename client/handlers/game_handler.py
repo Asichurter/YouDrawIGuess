@@ -120,8 +120,7 @@ def handle_game_timer_event(engine: ClientEngine,
 def handle_end_game(engine: ClientEngine,
                     signals: ClientSignal,
                     **kwargs):
-    return GAME_END_FLAG
-
+    engine.GameEndFlag = True
 
 # 改变设置的函数映射
 SettingChangeSwitch = {

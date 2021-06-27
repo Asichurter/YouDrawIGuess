@@ -25,6 +25,7 @@ class ClientEngine:
         self.BufferLock = Lock()
         # 客户端事件信号
         self.Signals = signals
+        self.GameEndFlag = False
 
         self.GamerId = None
         self.GamerUsrName = None
