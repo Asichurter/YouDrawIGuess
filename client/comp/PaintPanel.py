@@ -3,8 +3,9 @@ from PyQt5.Qt import QWidget, QColor, QPixmap, QIcon, QSize, QCheckBox
 from PyQt5.QtWidgets import QHBoxLayout, QVBoxLayout, QPushButton, QSplitter, \
     QComboBox, QLabel, QSpinBox, QLCDNumber
 import PyQt5.QtCore as core
-from client.comp.PaintBoard import PaintBoard, default_thickness, default_color
 
+from client.comp.PaintBoard import PaintBoard, default_thickness, default_color
+from utils.style_utils import get_font_stylesheet
 import config
 
 panel_resolution = (1280, 960)
@@ -50,6 +51,7 @@ class PaintPanel(QWidget):
         # ---------------------通知栏和时钟--------------------------
         self.InformLayout = QHBoxLayout()
         self.InformWidget = QLabel('')
+        self.InformWidget.setStyleSheet(get_font_stylesheet(color=(0,0,0), size=25))     # 设置通告栏的字体格式
         self.InformLayout.addWidget(self.InformWidget)
         self.InformClock = QLCDNumber(self)
         self.InformClock.setDigitCount(3)
@@ -63,9 +65,9 @@ class PaintPanel(QWidget):
         main_layout.addWidget(self.PaintBoard)
 
         # ---------------------橡皮擦--------------------------
-        self.cbtn_Eraser = QCheckBox("使用橡皮擦")
-        self.cbtn_Eraser.setParent(self)
-        sub_layout.addWidget(self.cbtn_Eraser)
+        self.EraserCheckbox = QCheckBox("使用橡皮擦")
+        self.EraserCheckbox.setParent(self)
+        sub_layout.addWidget(self.EraserCheckbox)
         # ---------------------------------------------------
 
         # splitter = QSplitter(self)  # 占位符
@@ -124,7 +126,7 @@ class PaintPanel(QWidget):
             初始化所有组件的事件处理逻辑
         '''
         # 橡皮擦点击事件处理
-        self.cbtn_Eraser.clicked.connect(self.on_cbtn_eraser_clicked)
+        self.EraserCheckbox.clicked.connect(self.on_eraser_checkbox_clicked)
 
         # 笔划粗细改变事件处理
         self.spinBox_penThickness.valueChanged.connect(
@@ -178,13 +180,13 @@ class PaintPanel(QWidget):
         self.spinBox_penThickness.setValue(int(thickness))
 
     def set_eraser(self, e):
-        self.cbtn_Eraser.setChecked(bool(e))
+        self.EraserCheckbox.setChecked(bool(e))
         self.PaintBoard.set_eraser(bool(e))
 
     def set_setting_visible(self, v):
         self.spinBox_penThickness.setEnabled(v)#.setVisible(v)
         self.comboBox_penColor.setEnabled(v)
-        self.cbtn_Eraser.setEnabled(v)
+        self.EraserCheckbox.setEnabled(v)
         self.btn_Clear.setEnabled(v)
 
     def extern_click(self, x, y):
@@ -210,8 +212,8 @@ class PaintPanel(QWidget):
         # print('thick change to ', penThickness)
         self.PaintBoard.change_pen_thickness(penThickness)
 
-    def on_cbtn_eraser_clicked(self):
-        e = self.cbtn_Eraser.isChecked()
+    def on_eraser_checkbox_clicked(self):
+        e = self.EraserCheckbox.isChecked()
         self.PaintBoard.set_eraser(e)
 
     def Quit(self):

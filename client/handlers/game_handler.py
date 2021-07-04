@@ -145,5 +145,4 @@ def handle_setting_changed(engine: ClientEngine,
 def handle_new_round(engine: ClientEngine,
                      signals: ClientSignal,
                      **kwargs):
-
     engine.Panel.reset_paint_panel()

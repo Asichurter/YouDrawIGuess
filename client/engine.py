@@ -134,8 +134,8 @@ class ClientEngine:
         self.Panel.add_gamer(gamer_name)
 
 
-    def add_chat_message(self, msg):
-        self.Panel.add_chat_message(msg)
+    def add_chat_message(self, name, msg):
+        self.Panel.add_chat_message(name, msg)
 
 
     def update_gamers(self, gamers):

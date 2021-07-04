@@ -98,9 +98,8 @@ class Client:
 
     # 绑定的退出的回调函数
     def exit(self):
-        self.Engine.WelcomeSocket.close()
         self.GameThread.exit(0)
-        exit(0)
+        sys.exit(0)
 
 
 class GameThread(core.QThread):
@@ -126,4 +125,4 @@ if __name__ == '__main__':
     # game.activate(socket_, 0, 'test')
     login = LoginPanel(socket_, activator=game.activate)
 
-    exit(app.exec_())  # 进入消息循环
+    sys.exit(app.exec_())  # 进入消息循环

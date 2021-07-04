@@ -2,12 +2,14 @@ from PyQt5.QtWidgets import QApplication
 from PyQt5 import QtWidgets as widgets
 from PyQt5 import QtCore as core
 import time
+import sys
 
 import config
 from client.comp.PaintPanel import PaintPanel
 from client.comp.GamerWidget import GamerWidget
 # from LoginPanel import LoginPanel
 from client.signal import ClientSignal
+from utils.style_utils import get_html_formatted_text
 
 
 addr = ('103.46.128.45', 36654)
@@ -84,6 +86,7 @@ class GamePanel(widgets.QMainWindow):
                                            alignment=core.Qt.AlignHCenter)
 
         self.MessageWidget = widgets.QTextEdit()
+        self.MessageWidget.setReadOnly(True)
         # self.MessageWidget = widgets.QListWidget()
         self.MessageGlobalLayout.addWidget(self.MessageWidget)
 
@@ -118,7 +121,7 @@ class GamePanel(widgets.QMainWindow):
 
         def send():
             msg = dialog.text()
-            print(msg)
+            # print(msg)
             self.send_chat_message(msg)
             dialog.clear()
 
@@ -132,12 +135,15 @@ class GamePanel(widgets.QMainWindow):
         '''
         self.Signals.ChatSendSignal.emit(message)
 
-    def add_chat_message(self, message):
+    def add_chat_message(self, name, message):
         '''
             向消息框中添加一条信息
         '''
-        temp = "<font color='red' size='6'><red>{text}</font>"
-        self.MessageWidget.append(temp.format(text=message))
+        # temp1 = f'<span style="color:rgb(30,120,255,255);font-size:20px;">{name}: </span><span style="color:black;font-size:22px;">{message}</span>'
+        name_str = get_html_formatted_text(name+': ', color='rgb(30,120,255,255)', size=20)
+        msg_str = get_html_formatted_text(message, color='black', size=22)
+        self.MessageWidget.append(name_str + msg_str)
+
 
     def add_gamer(self, name):
         '''
@@ -195,7 +201,7 @@ class GamePanel(widgets.QMainWindow):
         # self.SendTimer.stop()
         self.Signals.ExitSignal.emit()
         # self.Socket.close()
-        exit(0)
+        sys.exit(0)
 
 
     def signal_input_dialog(self, title, label, warning, compulsory=True, textFilter=None, textFilterMsg=''):

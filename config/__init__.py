@@ -1,6 +1,6 @@
 
 all_config = {
-    'WindowSize':(1920,960),
+    'WindowSize':(1860,960),
     'PaintPanelSize':(1280, 960),
     'PaintBoardSize':(1240, 860),
     'ServerAddr':'2721988cs4.wicp.vip',

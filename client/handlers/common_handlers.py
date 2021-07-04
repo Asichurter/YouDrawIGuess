@@ -21,7 +21,7 @@ def handle_common_chat(engine: ClientEngine,
                        f'no name or content extracted: {name},{content}')
         return
 
-    engine.add_chat_message('{}: {}'.format(name, content))
+    engine.add_chat_message(name, content)
 
 
 # 更新所有玩家的信息
