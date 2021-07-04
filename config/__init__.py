@@ -22,6 +22,7 @@ all_config = {
     'GuessPointPool':[3,2,2,2,2],         # 玩家答对后的得分
     'DrawPoint':3,                  # 画出的图被猜对时画图者加分
     'RoundTime':200,                  # 每一轮的时间
+    'MaxRound': 2,                  # 游戏循环轮数
     'DefaultThickness':6,
     'DefaultColor':'black'
 }
@@ -52,6 +53,7 @@ class GameConfig:
         self.GuessPointPool = all_config['GuessPointPool']
         self.DrawPoint = all_config['DrawPoint']
         self.RoundTime = all_config['RoundTime']
+        self.MaxRound = all_config['MaxRound']
 
 game = GameConfig()
 

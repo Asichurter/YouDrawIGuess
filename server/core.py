@@ -35,7 +35,7 @@ class Server:
 
         self.UnloggedGamers = []                        # socket已连接，但是逻辑还没有登录的玩家
         self.Gamers = GamerGroup(config.game.MaxGamer)  # 已登录的玩家群组
-        self.GameRoundPerGamer = 1                      # 每一个玩家出题的循环次数
+        self.GameRoundPerGamer = config.game.MaxRound   # 每一个玩家出题的循环次数
         self.ServerMessage = ServerMessage()            # 服务器端发送消息模板类
         self.TimerManager = TimerManager()              # 服务器端计时器管理实例，可以方便地创建定时器
         self.GamerCmdListenThreads = []                 # 游戏状态消息循环监听的消息接受线程列表
@@ -134,7 +134,7 @@ class Server:
     def login_state(self):
         # 欢迎socket监听3秒就开始监听主机命令
         self.WelcomeSocket.settimeout(config.server.ServerAcceptInterval)
-        self.WelcomeSocket.listen(self.MaxGamer)
+        self.WelcomeSocket.listen(100)  # todo: 划定最大连接数量
 
         login_threads = []
         # 外层循环接受玩家连接
