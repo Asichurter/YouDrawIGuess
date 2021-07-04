@@ -98,7 +98,7 @@ class LoginPanel(widgets.QMainWindow):
                 widgets.QMessageBox.warning(self,
                                             '登陆失败',
                                             login_info)
-                self.UsrName.clear()
+                # self.UsrName.clear()
                 self.Psw.clear()
         except Exception as e:
             logger.error('LoginPanel.login','Fail to login, err: {}'.format(e))

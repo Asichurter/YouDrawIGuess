@@ -62,16 +62,19 @@ class Gamer(UnloggedGamer):
         return self.UserName, self.Point
 
 class GamerGroup:
-    def __init__(self):
+    def __init__(self, max_gamer=4):
         self._GamersLock = Lock()
         self._Gamers = []
         self._GamerIdIndexMapping = {}
+        self.MaxGamer = max_gamer
 
-    def add_gamer(self, gamer, gamer_id):
-        self._GamersLock.acquire()
+    def add_gamer(self, gamer, gamer_id, safe_call=False):
+        if not safe_call:
+            self._GamersLock.acquire()
         self._GamerIdIndexMapping[gamer_id] = len(self._Gamers)
         self._Gamers.append(gamer)
-        self._GamersLock.release()
+        if not safe_call:
+            self._GamersLock.release()
 
     def get_gamer_by_id(self, id_):
         gamer_index = self._GamerIdIndexMapping.get(id_, None)
@@ -91,6 +94,14 @@ class GamerGroup:
         gamer = self.get_gamer_by_id(id_)
         gamer.send_cmd(command=command, **kwargs)
 
+    # 没有加锁，需要保证在加锁环境下使用本方法
+    def check_gamer_is_enough(self):
+        gl = len(self._Gamers)
+        if gl > self.MaxGamer:
+            logger.error('gamer.check_gamer_is_enough',
+                         f'number of gamers is {gl}, greater than max gamer {self.MaxGamer}')
+        return gl >= self.MaxGamer
+
     def __iter__(self):
         return iter(self._Gamers)
 
@@ -99,6 +110,14 @@ class GamerGroup:
 
     def __getitem__(self, idx):
         return self._Gamers[idx]
+
+    def __enter__(self):
+        self._GamersLock.acquire()
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self._GamersLock.release()
+
 
 if __name__ == '__main__':
     gp = GamerGroup()

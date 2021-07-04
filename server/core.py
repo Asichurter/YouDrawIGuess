@@ -33,17 +33,16 @@ class Server:
         # 绑定端口
         self.WelcomeSocket.bind(('', config.connect.ServerPort))
 
-        self.MaxGamer = config.game.MaxGamer    # 最大游戏玩家数量
-        self.UnloggedGamers = []                # socket已连接，但是逻辑还没有登录的玩家
-        self.Gamers = GamerGroup()              # 已登录的玩家群组
-        self.GameRoundPerGamer = 1              # 每一个玩家出题的循环次数
-        self.ServerMessage = ServerMessage()    # 服务器端发送消息模板类
-        self.TimerManager = TimerManager()      # 服务器端计时器管理实例，可以方便地创建定时器
-        self.GamerCmdListenThreads = []         # 游戏状态消息循环监听的消息接受线程列表
-        self.GameLogic = None                   # 游戏逻辑实体类
-        self.CmdQueue = Queue()                 # 监听消息线程间通信队列
-        self.GameBeginFlag = ThreadValue(True)  # 指示游戏是否开始的标志
-        self.MessageLoopFlag = True             # 指示消息循环是否退出的标志
+        self.UnloggedGamers = []                        # socket已连接，但是逻辑还没有登录的玩家
+        self.Gamers = GamerGroup(config.game.MaxGamer)  # 已登录的玩家群组
+        self.GameRoundPerGamer = 1                      # 每一个玩家出题的循环次数
+        self.ServerMessage = ServerMessage()            # 服务器端发送消息模板类
+        self.TimerManager = TimerManager()              # 服务器端计时器管理实例，可以方便地创建定时器
+        self.GamerCmdListenThreads = []                 # 游戏状态消息循环监听的消息接受线程列表
+        self.GameLogic = None                           # 游戏逻辑实体类
+        self.CmdQueue = Queue()                         # 监听消息线程间通信队列
+        self.GameBeginFlag = ThreadValue(True)          # 指示游戏是否开始的标志
+        self.MessageLoopFlag = True                     # 指示消息循环是否退出的标志
 
     def send_cmd_by_id(self, id_, command, **kwargs):
         gamer = self.Gamers.get_gamer_by_id(id_)
@@ -58,6 +57,8 @@ class Server:
             g.send_cmd(command, **kwargs)
 
     def run(self):
+        logger.info('Server.run',
+                    'Server is running now')
         self.login_state()
 
         # 对所有gamer，启动监听其请求的线程
