@@ -5,8 +5,9 @@ from PyQt5.QtWidgets import QHBoxLayout, QVBoxLayout, QPushButton, QSplitter, \
 import PyQt5.QtCore as core
 
 from client.comp.PaintBoard import PaintBoard, default_thickness, default_color
-from utils.style_utils import get_font_stylesheet
+from utils.style_utils import get_qlabel_font_stylesheet
 import config
+from vals.color import INFORM_MSG_COLOR
 
 panel_resolution = (1280, 960)
 
@@ -51,7 +52,7 @@ class PaintPanel(QWidget):
         # ---------------------通知栏和时钟--------------------------
         self.InformLayout = QHBoxLayout()
         self.InformWidget = QLabel('')
-        self.InformWidget.setStyleSheet(get_font_stylesheet(color=(0,0,0), size=25))     # 设置通告栏的字体格式
+        self.InformWidget.setStyleSheet(get_qlabel_font_stylesheet(color=INFORM_MSG_COLOR, size=25))     # 设置通告栏的字体格式
         self.InformLayout.addWidget(self.InformWidget)
         self.InformClock = QLCDNumber(self)
         self.InformClock.setDigitCount(3)

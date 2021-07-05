@@ -12,3 +12,6 @@ class ServerMessage:
 
     def make_all_gamers_answered_message(self, answer):
         return f'当前回合结束，所有玩家都猜对了{answer}'
+
+    def make_gamer_answered_inform_message(self, gamer_name):
+        return f'{gamer_name} 已经猜对了答案'

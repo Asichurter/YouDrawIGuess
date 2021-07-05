@@ -1,7 +1,8 @@
 from PyQt5 import QtWidgets as widgets
 from PyQt5 import QtCore as core
 
-from utils.style_utils import get_font_stylesheet
+from utils.style_utils import get_qlabel_font_stylesheet
+from vals.color import *
 
 class GamerWidget(widgets.QWidget):
     PointStrTemp = '分数: {}'
@@ -15,8 +16,8 @@ class GamerWidget(widgets.QWidget):
         self.NameLabel = widgets.QLabel(self.GamerName)
         self.GamerPoint = point
         self.PointLabel = widgets.QLabel(self._get_point_str(self.GamerPoint))
-        self.NameLabel.setStyleSheet(get_font_stylesheet(color=(30,120,255),size=20))   # 浅蓝色姓名
-        self.PointLabel.setStyleSheet(get_font_stylesheet(color=(0,0,0),size=18))       # 黑色分数
+        self.NameLabel.setStyleSheet(get_qlabel_font_stylesheet(color=GAMER_NAME_ENTITY_COLOR, size=20))
+        self.PointLabel.setStyleSheet(get_qlabel_font_stylesheet(color=GAMER_WIDGET_POINT_COLOR, size=18))
         # self.NameLabel.setMaximumWidth(100)
         layout.addWidget(self.NameLabel)
         layout.addWidget(self.PointLabel)

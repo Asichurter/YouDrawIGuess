@@ -6,7 +6,7 @@ import sys
 import socket
 import time
 
-from utils.style_utils import get_font_stylesheet
+from utils.style_utils import get_qlabel_font_stylesheet
 from com.talk import send_cmd, recv_cmd
 from log import GlobalLogger as logger
 from vals.command import CMD_LOGIN_RESULT, make_login_command, parse_login_result_command
@@ -30,7 +30,7 @@ class LoginPanel(widgets.QMainWindow):
         self.MainLayout.setAlignment(core.Qt.AlignHCenter)
 
         self.Label = widgets.QLabel('你画我猜 登录')
-        self.Label.setStyleSheet(get_font_stylesheet(size=25))
+        self.Label.setStyleSheet(get_qlabel_font_stylesheet(size=25))
         self.MainLayout.addWidget(self.Label, alignment=core.Qt.AlignTop | core.Qt.AlignHCenter)
 
         self.FormLayout = widgets.QFormLayout()
