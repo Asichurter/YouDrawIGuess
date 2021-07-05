@@ -126,6 +126,7 @@ class GamePanel(widgets.QMainWindow):
             dialog.clear()
 
         btn.clicked.connect(send)
+        dialog.returnPressed.connect(send)
 
         # TODO：不同玩家发送的信息颜色不同设置
 

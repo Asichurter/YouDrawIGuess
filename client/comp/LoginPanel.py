@@ -112,13 +112,3 @@ class LoginPanel(widgets.QMainWindow):
 
     def initLogic(self):
         self.OkButton.clicked.connect(self.login)
-
-if __name__ == '__main__':
-    socket_ = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    socket_.connect(addr)
-    print('connecting...')
-
-    app = QApplication(sys.argv)
-    c = LoginPanel(socket_)
-
-    exit(app.exec_())  # 进入消息循环
