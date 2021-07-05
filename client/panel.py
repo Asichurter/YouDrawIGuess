@@ -10,6 +10,8 @@ from client.comp.GamerWidget import GamerWidget
 # from LoginPanel import LoginPanel
 from client.signal import ClientSignal
 from utils.style_utils import get_html_formatted_text
+from vals.entity import SERVER_CHAT_NAME
+from vals.color import *
 
 
 addr = ('103.46.128.45', 36654)
@@ -98,10 +100,14 @@ class GamePanel(widgets.QMainWindow):
         for i,w in enumerate(self.GamerWidgets):
             # print(i,' th widget added')
             self.GamerGlobalLayout.addWidget(w, i, 0)
-
         self.GameBeginBtn = widgets.QPushButton('开始游戏')
         self.GameBeginBtn.setVisible(False)
-        self.GameBeginBtn.clicked.connect(lambda args: self.Signals.GameBeginSignal.emit())
+
+        def __game_begin_btn_clicked():
+            self.GameBeginBtn.setEnabled(False)     # 按下开始游戏之后，按按钮将失效
+            self.Signals.GameBeginSignal.emit()
+
+        self.GameBeginBtn.clicked.connect(__game_begin_btn_clicked)
         self.GamerGlobalLayout.addWidget(self.GameBeginBtn, config.game.MaxGamer, 0)
 
         self.GamerCount = 0
@@ -141,8 +147,15 @@ class GamePanel(widgets.QMainWindow):
             向消息框中添加一条信息
         '''
         # temp1 = f'<span style="color:rgb(30,120,255,255);font-size:20px;">{name}: </span><span style="color:black;font-size:22px;">{message}</span>'
-        name_str = get_html_formatted_text(name+': ', color='rgb(30,120,255,255)', size=20)
-        msg_str = get_html_formatted_text(message, color='black', size=22)
+        if name == SERVER_CHAT_NAME:
+            name_color = SERVER_CHAT_NAME_COLOR
+            msg_color = SERVER_CHAT_MSG_COLOR
+        else:
+            name_color = GAMER_NAME_ENTITY_COLOR
+            msg_color = GAMER_CHAT_MSG_COLOR
+
+        name_str = get_html_formatted_text(name+': ', color=name_color, size=20)
+        msg_str = get_html_formatted_text(message, color=msg_color, size=22)
         self.MessageWidget.append(name_str + msg_str)
 
 
